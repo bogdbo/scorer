@@ -6,7 +6,7 @@ const connectionString = process.env.DB_CONNECTION_STRING || '';
 const port = process.env.PORT || 5000;
 
 var app = express();
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 app.get('/api/v1/users', async (req, res) => {
   var client = await MongoClient.connect(connectionString);
