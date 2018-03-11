@@ -16,5 +16,5 @@ Dev
 Prod
 
 1.  Heroku - configure env variables
-2.  Deploy (eg. from heroku dashboard, github integration)
-3.  Done
+2.  Deploy (eg. from heroku dashboard, github integration) 
+3.  Done (heroku will automatically call `npm start` and `npm run heroku-postbuild` which will build the API and Client and start listening on PORT)
