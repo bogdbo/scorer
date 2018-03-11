@@ -14,8 +14,9 @@
   "scripts": {
     "compile": "tsc && npm start",
     "dev": "nodemon -e ts --ignore client/ --exec \"npm run compile\"",
-    "start": "tsc && env.local.cmd && node build/index.js",
-    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
+    "start": "./node_modules/.bin/tsc && env.local.cmd && node build/index.js",
+    "heroku-postbuild":
+      "cd client && npm install --only=dev && npm install && npm run build"
   },
   "repository": {
     "type": "git",
