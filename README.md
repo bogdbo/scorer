@@ -4,8 +4,9 @@ Dev
 
 1.  Configure env.local.cmd if default mongo connection string is not used
 2.  `npm run dev`
+3.  `cd client` and `npm start`
 
-Prod
+Prod (not ready)
 
 1.  Heroku - configure env variables
 2.  todo: pervent env.local.cmd overwrite current env
