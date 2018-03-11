@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Link, BrowserRouter, Route, Switch } from 'react-router-dom';
-import { Darts } from './games/darts/Board';
+import { DartsGame } from './games/darts/Darts';
 
 const Container = styled.div`
   width: 100%;
@@ -56,9 +56,9 @@ class App extends React.Component {
         <Container>
           <Switch>
             <Route exact={true} path="/" component={Games} />
-            <Route path="/darts" component={Darts} />
-            <Route path="/foosball" component={Darts} />
-            <Route path="/fifa" component={Darts} />
+            <Route path="/darts" component={DartsGame} />
+            <Route path="/foosball" component={DartsGame} />
+            <Route path="/fifa" component={DartsGame} />
           </Switch>
         </Container>
       </BrowserRouter>

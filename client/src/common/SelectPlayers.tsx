@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Service, User } from '../service';
 
 interface Props {
-  onFinished?: (selectedUsers: User[]) => void;
+  onStart?: (selectedUsers: User[]) => void;
 }
 
 interface State {
@@ -29,8 +29,8 @@ export class SelectPlayers extends React.Component<Props, State> {
         <h1
           onClick={() =>
             this.state.selectedUsers.length >= 2 &&
-            this.props.onFinished &&
-            this.props.onFinished(this.state.selectedUsers)
+            this.props.onStart &&
+            this.props.onStart(this.state.selectedUsers)
           }
         >
           Start
@@ -66,6 +66,5 @@ export class SelectPlayers extends React.Component<Props, State> {
         <label htmlFor={user.username}>{user.username}</label>
       </div>
     );
-    // tslint:disable-next-line:semicolon
   };
 }

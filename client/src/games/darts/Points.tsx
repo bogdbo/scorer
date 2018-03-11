@@ -42,8 +42,13 @@ interface State {
   multiplier: 1 | 2 | 3;
 }
 
-export class Points extends React.Component<{}, State> {
-  constructor(props: {}) {
+interface Props {
+  onPoints?: (points: Number) => void;
+  onUndo: () => void;
+}
+
+export class Points extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { multiplier: 1 };
   }
@@ -53,9 +58,11 @@ export class Points extends React.Component<{}, State> {
       <Button
         key={text}
         onClick={() => {
+          if (this.props.onPoints) {
+            this.props.onPoints(value * this.state.multiplier);
+          }
+
           this.setState({ multiplier: 1 });
-          // tslint:disable-next-line:no-console
-          console.log(this.state.multiplier * value);
         }}
         odd={value % 2 === 0}
       >
@@ -106,7 +113,7 @@ export class Points extends React.Component<{}, State> {
       <Container>
         {this.renderMultipliers()}
         {this.renderButtons()}
-        <Undo>Undo</Undo>
+        <Undo onClick={this.props.onUndo}>Undo</Undo>
       </Container>
     );
   }
