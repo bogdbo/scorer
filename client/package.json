@@ -4,12 +4,14 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
+    "onsenui": "^2.9.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-onsenui": "^1.10.0",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "react-scripts-ts": "2.13.0",
-    "styled-components": "^3.2.1"
+    "styled-components": "^3.2.2"
   },
   "scripts": {
     "start": "react-scripts-ts start",
@@ -24,7 +26,9 @@
     "@types/react-dom": "^16.0.4",
     "@types/react-router-dom": "^4.2.4",
     "concurrently": "^3.5.1",
-    "typescript": "^2.7.2"
+    "typescript": "^2.7.2",
+    "@types/onsenui": "^2.0.0",
+    "@types/react-onsenui": "^2.8.5"
   },
   "proxy": {
     "/api/v1": {

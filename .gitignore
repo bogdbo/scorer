@@ -12,6 +12,7 @@
 /build
 
 # misc
+test.ts
 yarn.lock
 .env
 .DS_Store

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Service, User } from '../service';
+import { Checkbox } from 'react-onsenui';
 
 interface Props {
   onStart?: (selectedUsers: User[]) => void;
@@ -43,15 +44,13 @@ export class SelectPlayers extends React.Component<Props, State> {
   renderUserPicker = (user: User) => {
     return (
       <div key={user.username}>
-        <input
-          id={user.username}
-          type="checkbox"
+        <Checkbox
           value={user.username}
           disabled={
             this.state.selectedUsers.filter(u => u.username === user.username)
               .length === 0 && this.state.selectedUsers.length === 4
           }
-          onChange={e => {
+          onChange={(e: any) => {
             let selectedUsers: User[] = [];
             if (e.target.checked) {
               selectedUsers = this.state.selectedUsers.concat(user);

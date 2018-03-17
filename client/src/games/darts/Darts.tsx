@@ -4,6 +4,7 @@ import { Player } from './Player';
 import { Points } from './Points';
 import { SelectPlayers } from '../../common/SelectPlayers';
 import { User, Service, Darts, DartsPlayer } from '../../service';
+import { Page, Toolbar, BackButton } from 'react-onsenui';
 
 const Container = styled.div`
   display: grid;
@@ -84,22 +85,39 @@ export class DartsGame extends React.Component<Props, State> {
   render() {
     if (this.state.game.players) {
       return (
-        <Container>
-          <Players>
-            {Object.keys(this.state.game.players).map(p => (
-              <Player
-                key={p}
-                username={p}
-                score={this.state.game.players[p].score}
-                history={this.state.game.history}
-              />
-            ))}
-          </Players>
-          <Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
-        </Container>
+        <Page>
+          <Container>
+            <Players>
+              {Object.keys(this.state.game.players).map(p => (
+                <Player
+                  key={p}
+                  username={p}
+                  score={this.state.game.players[p].score}
+                  history={this.state.game.history}
+                />
+              ))}
+            </Players>
+            <Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
+          </Container>
+        </Page>
       );
     } else {
-      return <SelectPlayers onStart={this.handleStart} />;
+      return (
+        <Page
+          renderToolbar={() => {
+            return (
+              <Toolbar>
+                <div className="left">
+                  <BackButton />
+                </div>
+                <div className="center">Stateless Navigator</div>
+              </Toolbar>
+            );
+          }}
+        >
+          <SelectPlayers onStart={this.handleStart} />
+        </Page>
+      );
     }
   }
 }

@@ -1,69 +1,55 @@
 import * as React from 'react';
-import styled from 'styled-components';
-import { Link, BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Navigator, Toolbar, BackButton, Page, Button } from 'react-onsenui';
+import 'onsenui/css/onsenui.min.css';
+import 'onsenui/css/onsenui-core.min.css';
+import 'onsenui/css/dark-onsen-css-components.min.css';
+import 'onsenui/css/onsenui-fonts.css';
 import { DartsGame } from './games/darts/Darts';
 
-const Container = styled.div`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100%;
-`;
-
-const GameList = styled.div`
-  display: flex;
-  flex-flow: column;
-  flex: 1 1 auto;
-  background-color: blue;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-`;
-
-const Game = styled(Link)`
-  color: red;
-  display: block;
-  font-size: 5em;
-  padding: 5px;
-  color: gray;
-  text-decoration: none;
-  background-color: green;
-  display: flex;
-  flex: 1 1 auto;
-  width: 100%;
-  align-self: center;
-  justify-content: center;
-  margin-bottom: 2px;
-`;
-
-const Games: React.SFC<{}> = () => {
+interface GamesProps {
+  navigator: Navigator;
+}
+const Games: React.SFC<GamesProps> = (props: GamesProps) => {
   return (
-    <GameList>
-      <Game to="/darts">Darts</Game>
-      <Game to="/foosball">Foosball</Game>
-      <Game to="/fifa">Fifa</Game>
-    </GameList>
+    <Page
+      renderToolbar={() => {
+        return (
+          <Toolbar>
+            <div className="left">
+              <BackButton />
+            </div>
+            <div className="center">Stateless Navigator</div>
+          </Toolbar>
+        );
+      }}
+    >
+      <Button
+        onClick={() =>
+          props.navigator.pushPage({ comp: DartsGame }, { animation: 'slide' })
+        }
+      >
+        Darts
+      </Button>
+      <Button onClick={() => props.navigator.pushPage({ comp: DartsGame })}>
+        Foosball
+      </Button>
+      <Button onClick={() => props.navigator.pushPage({ comp: DartsGame })}>
+        Fifa
+      </Button>
+    </Page>
   );
 };
 
-class App extends React.Component {
+export default class App extends React.Component {
+  renderPage = (route: any, navigator: Navigator) => {
+    route.props = route.props || {};
+    route.props.navigator = navigator;
+    return React.createElement(route.comp, route.props);
+  };
+
   render() {
     return (
-      <BrowserRouter>
-        <Container>
-          <Switch>
-            <Route exact={true} path="/" component={Games} />
-            <Route path="/darts" component={DartsGame} />
-            <Route path="/foosball" component={DartsGame} />
-            <Route path="/fifa" component={DartsGame} />
-          </Switch>
-        </Container>
-      </BrowserRouter>
+      <Navigator initialRoute={{ comp: Games }} renderPage={this.renderPage} />
     );
   }
 }
-
-export default App;
