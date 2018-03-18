@@ -17,7 +17,7 @@ const Players = styled.div`
   overflow: scroll;
 `;
 
-interface Props {}
+interface Props { }
 
 interface State {
   game: Darts;
@@ -110,7 +110,7 @@ export class DartsGame extends React.Component<Props, State> {
                 <div className="left">
                   <BackButton />
                 </div>
-                <div className="center">Stateless Navigator</div>
+                <div className="center">Darts</div>
               </Toolbar>
             );
           }}

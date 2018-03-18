@@ -12,8 +12,8 @@ export const Player: React.SFC<Props> = (props: Props) => {
     var currentUserHistory = history
       .filter(h => h.username === props.username)
       .slice(-3);
-    return currentUserHistory.map(h => (
-      <div key={Date.now.toString()}>{h.points}</div>
+    return currentUserHistory.map((h, i) => (
+      <div key={h.username + i}>{h.points}</div>
     ));
   };
 
