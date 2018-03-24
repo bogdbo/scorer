@@ -1,15 +1,18 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import * as Ons from 'onsenui';
 
 const Container = styled.div`
   display: grid;
-  grid-gap: 2px;
+  grid-gap: 5px;
+  margin: 5px;
   grid-template-columns: repeat(5, 1fr);
   grid-template-areas: 'double double tripple tripple tripple';
   border-collapse: collapse;
 `;
 
 const Button = styled.div`
+  font-size: 1.1rem;
   display: flex;
   flex: 1 1 auto;
   vertical-align: middle;
@@ -18,8 +21,10 @@ const Button = styled.div`
   width: 100%;
   align-items: center;
   justify-content: center;
+  color: #5c5e5f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   background-color: ${(props: { odd?: boolean }) =>
-    props.odd ? '#FF8800' : '#0088FF'};
+    props.odd ? '#B9C6C9' : '#C6D2D4'};
 `;
 
 interface MultiplierProps {
@@ -27,15 +32,33 @@ interface MultiplierProps {
   selected?: boolean;
 }
 const Multiplier = styled(Button)`
-  background-color: ${(props: MultiplierProps) =>
-    props.selected ? 'red' : 'yellow'};
   grid-area: ${(props: MultiplierProps) => props.type};
+  color: ${(props: MultiplierProps) =>
+    props.selected ? '#E9F9C2' : '#5c5e5f'};
+`;
+
+const Double = styled(Multiplier)`
+  background-color: ${(props: MultiplierProps) =>
+    props.selected ? '#72AC4A' : '#E9F9C2'};
+`;
+
+const Tripple = styled(Multiplier)`
+  background-color: ${(props: MultiplierProps) =>
+    props.selected ? '#72AC4A' : '#D8FA86'};
 `;
 
 const Undo = styled(Button)`
   grid-row: 6;
   grid-column: 2;
-  grid-column-end: -1;
+  grid-column-end: 5;
+  background-color: #e6c1b3;
+`;
+
+const Miss = styled(Button)`
+  grid-row: 6;
+  grid-column: 5;
+  grid-column-end: 6;
+  background-color: #c77474;
 `;
 
 interface State {
@@ -43,11 +66,11 @@ interface State {
 }
 
 interface Props {
-  onPoints?: (points: Number) => void;
+  onPoints: (points: Number) => void;
   onUndo: () => void;
 }
 
-export class Points extends React.Component<Props, State> {
+export class X01Points extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { multiplier: 1 };
@@ -58,8 +81,13 @@ export class Points extends React.Component<Props, State> {
       <Button
         key={text}
         onClick={() => {
-          if (this.props.onPoints) {
+          const points = value * this.state.multiplier;
+          if (points <= 60) {
             this.props.onPoints(value * this.state.multiplier);
+          } else {
+            Ons.notification.toast('Tripple bull is not a valid hit.', {
+              timeout: 1500
+            });
           }
 
           this.setState({ multiplier: 1 });
@@ -84,26 +112,28 @@ export class Points extends React.Component<Props, State> {
   renderMultipliers() {
     return (
       <>
-        <Multiplier
+        <Double
           key="double"
           type="double"
           selected={this.state.multiplier === 2}
-          onClick={() =>
-            this.setState({ multiplier: this.state.multiplier === 2 ? 1 : 2 })
-          }
+          onClick={() => {
+            window.navigator.vibrate(50);
+            this.setState({ multiplier: this.state.multiplier === 2 ? 1 : 2 });
+          }}
         >
           Double
-        </Multiplier>
-        <Multiplier
+        </Double>
+        <Tripple
           key="triple"
           type="tripple"
           selected={this.state.multiplier === 3}
-          onClick={() =>
-            this.setState({ multiplier: this.state.multiplier === 3 ? 1 : 3 })
-          }
+          onClick={() => {
+            window.navigator.vibrate(50);
+            this.setState({ multiplier: this.state.multiplier === 3 ? 1 : 3 });
+          }}
         >
           Triple
-        </Multiplier>
+        </Tripple>
       </>
     );
   }
@@ -114,6 +144,14 @@ export class Points extends React.Component<Props, State> {
         {this.renderMultipliers()}
         {this.renderButtons()}
         <Undo onClick={this.props.onUndo}>Undo</Undo>
+        <Miss
+          onClick={() => {
+            this.props.onPoints(0);
+            this.setState({ multiplier: 1 });
+          }}
+        >
+          Miss
+        </Miss>
       </Container>
     );
   }

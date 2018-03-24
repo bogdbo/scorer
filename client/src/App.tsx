@@ -1,12 +1,20 @@
 import * as React from 'react';
-import { Navigator, Page, Button, Toolbar, ProgressCircular } from 'react-onsenui';
+import {
+  Navigator,
+  Page,
+  Button,
+  Toolbar,
+  ProgressCircular,
+  BottomToolbar
+} from 'react-onsenui';
 import 'onsenui/css/onsenui.min.css';
 import 'onsenui/css/onsenui-core.min.css';
 import 'onsenui/css/onsen-css-components.min.css';
 import 'onsenui/css/onsenui-fonts.css';
-import { DartsGame } from './games/darts/Darts';
 import styled from 'styled-components';
 import { Service } from './service';
+import { DartsSettingsPage } from './games/darts/DartsSettingsPage';
+import * as Ons from 'onsenui';
 
 const Container = styled.div`
   display: flex;
@@ -14,7 +22,7 @@ const Container = styled.div`
   margin: 20px;
 `;
 
-const GameButton = styled(Button) `
+const GameButton = styled(Button)`
   height: 80px;
   display: flex;
   align-items: center;
@@ -34,12 +42,18 @@ const IdentityContainer = styled.div`
   }
 `;
 
+const VersionContainer = styled.div`
+  float: right;
+  padding: 15px;
+`;
+
 interface GamesProps {
   navigator: Navigator;
 }
 
 interface GamesState {
   users?: any;
+  identitySelected?: boolean;
 }
 
 class Games extends React.Component<GamesProps, GamesState> {
@@ -51,25 +65,44 @@ class Games extends React.Component<GamesProps, GamesState> {
   renderToolbar = () => {
     return (
       <Toolbar>
-        <div className="center">Scorer</div>
-      </Toolbar>);
+        <div className="center">
+          <img height="20" src="favicon.png" />
+          <b> Scorer</b>
+        </div>
+      </Toolbar>
+    );
   };
 
   async componentDidMount() {
     const result = await Service.getUsers();
-    this.setState({ users: result.data });
+    this.setState({
+      users: result.data,
+      identitySelected: Service.getCurrentIdentity() != null
+    });
   }
 
   handleIdentityChange = (e: any) => {
-    Service.setCurrentIdentity(e.target.value);
+    if (e.target.value === 'none') {
+      this.setState({ identitySelected: false });
+    } else {
+      Service.setCurrentIdentity(e.target.value);
+      this.setState({ identitySelected: true });
+    }
   };
 
   renderCurrentIdentity = () => {
-    const currentIdentity = Service.getCurrentIdentity() || '';
+    const currentIdentity = Service.getCurrentIdentity();
     if (this.state.users) {
       return (
-        <select defaultValue={currentIdentity} onChange={this.handleIdentityChange}>
-          {(this.state.users || []).map((u: any) => (<option key={u.username}>{u.username}</option>))}
+        <select
+          className="select-input"
+          defaultValue={currentIdentity || 'none'}
+          onChange={this.handleIdentityChange}
+        >
+          <option value="none">Select your identity...</option>
+          {this.state.users.map((u: any) => (
+            <option key={u.username}>{u.username}</option>
+          ))}
         </select>
       );
     } else {
@@ -77,24 +110,35 @@ class Games extends React.Component<GamesProps, GamesState> {
     }
   };
 
+  rendert = () => {
+    return (
+      <BottomToolbar>
+        <VersionContainer>
+          <span>Alpha version</span>
+        </VersionContainer>
+      </BottomToolbar>
+    );
+  };
   render() {
     return (
-      <Page renderToolbar={this.renderToolbar}>
-        <IdentityContainer>
-          {this.renderCurrentIdentity()}
-        </IdentityContainer>
+      <Page
+        renderToolbar={this.renderToolbar}
+        renderBottomToolbar={this.rendert}
+      >
+        <IdentityContainer>{this.renderCurrentIdentity()}</IdentityContainer>
         <Container>
-          <GameButton onClick={() => this.props.navigator.pushPage({ comp: DartsGame })}>
+          <GameButton
+            disabled={!this.state.identitySelected}
+            onClick={() =>
+              this.props.navigator.pushPage({ comp: DartsSettingsPage })
+            }
+          >
             Darts
-      </GameButton>
-          <GameButton onClick={() => this.props.navigator.pushPage({ comp: DartsGame })}>
-            Foosball
-      </GameButton>
-          <GameButton onClick={() => this.props.navigator.pushPage({ comp: DartsGame })}>
-            Fifa
-      </GameButton>
+          </GameButton>
+          <GameButton disabled={true}>Foosball</GameButton>
+          <GameButton disabled={true}>Fifa</GameButton>
         </Container>
-      </Page >
+      </Page>
     );
   }
 }
@@ -107,9 +151,25 @@ export default class App extends React.Component {
     return React.createElement(route.comp, route.props);
   };
 
+  componentDidMount() {
+    Ons.ready(() => {
+      Ons.disableAnimations();
+    });
+
+    window.onbeforeunload = (e: any) => {
+      var dialogText = 'Dialog text here';
+      e.returnValue = dialogText;
+      return dialogText;
+    };
+  }
+
   render() {
     return (
-      <Navigator initialRoute={{ comp: Games, hasBackButton: false }} renderPage={this.renderPage} />
+      <Navigator
+        initialRoute={{ comp: Games, hasBackButton: false }}
+        renderPage={this.renderPage}
+        animation="slide"
+      />
     );
   }
 }

@@ -1,0 +1,137 @@
+import * as React from 'react';
+import styled from 'styled-components';
+import { Player } from './Player';
+import { X01Points } from './X01Points';
+import { Page, Toolbar, Navigator, BackButton } from 'react-onsenui';
+import { X01Settings, X01Game, DartsPlayer } from './models';
+import { User } from '../../service';
+import * as Ons from 'onsenui';
+
+const Container = styled.div`
+  display: grid;
+  height: 100%;
+  grid-template-rows: 1fr 4fr;
+`;
+
+const Players = styled.div`
+  display: flex;
+  align-items: center;
+  overflow: scroll;
+`;
+
+interface Props {
+  settings: X01Settings;
+  players: User[];
+  navigator: Navigator;
+}
+
+interface State {
+  game: X01Game;
+  currentPlayer: string;
+}
+
+export class X01GamePage extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.initNewGame();
+  }
+
+  initNewGame = () => {
+    // TODO: POST new game
+    // var result = await Service.newGame();
+    const game: X01Game = {
+      _id: 'todo',
+      createdAt: new Date(),
+      players: {},
+      history: []
+    };
+    this.props.players.forEach(u => {
+      game.players[u.username] = {} as DartsPlayer;
+      game.players[u.username].score = this.props.settings.startScore;
+    });
+
+    this.state = { game, currentPlayer: this.props.players[0].username };
+  };
+
+  handlePoints = (points: number) => {
+    const game = this.state.game;
+    var currentPlayer = game.players[this.state.currentPlayer];
+    currentPlayer.score -= points;
+    game.history.push({ username: this.state.currentPlayer, points });
+    this.setState({ game, currentPlayer: this.tryMoveNextPlayer() });
+  };
+
+  handleUndo = () => {
+    const game = this.state.game;
+    const lastMove = game.history.pop();
+    if (!lastMove) {
+      Ons.notification.toast('Nothing to undo.', { timeout: 1500 });
+      return;
+    }
+    game.players[lastMove.username].score += lastMove.points;
+    this.setState({ currentPlayer: lastMove.username, game });
+  };
+
+  tryMoveNextPlayer = () => {
+    const game = this.state.game;
+    const lastThreeShots = game.history.slice(-3);
+    if (lastThreeShots.length < 3) {
+      return this.state.currentPlayer;
+    }
+
+    if (
+      lastThreeShots.filter(s => s.username === this.state.currentPlayer)
+        .length === 3
+    ) {
+      const players = Object.keys(this.state.game.players);
+      const currentPlayerIndex = players.indexOf(this.state.currentPlayer);
+      const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      return players[nextPlayerIndex];
+    } else {
+      return this.state.currentPlayer;
+    }
+  };
+
+  renderToolbar = () => {
+    return (
+      <Toolbar>
+        <div className="left">
+          <BackButton onClick={this.handleBackButton} />
+        </div>
+        <div className="center">{this.props.settings.startScore} Game</div>
+      </Toolbar>
+    );
+  };
+
+  handleBackButton = async () => {
+    const result: any = await Ons.notification.confirm(
+      'Are you sure you want to end the current game?',
+      { title: 'End game' }
+    );
+
+    if (result === 1) {
+      this.props.navigator.popPage();
+    }
+  };
+
+  render() {
+    return (
+      <Page renderToolbar={this.renderToolbar}>
+        <Container>
+          <Players>
+            {Object.keys(this.state.game.players).map((p, i) => (
+              <Player
+                active={this.state.currentPlayer === p}
+                key={p}
+                username={p}
+                score={this.state.game.players[p].score}
+                history={this.state.game.history}
+              />
+            ))}
+          </Players>
+          <X01Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
+        </Container>
+      </Page>
+    );
+  }
+}
