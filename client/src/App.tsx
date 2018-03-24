@@ -110,7 +110,7 @@ class Games extends React.Component<GamesProps, GamesState> {
     }
   };
 
-  rendert = () => {
+  renderVersionToolbar = () => {
     return (
       <BottomToolbar>
         <VersionContainer>
@@ -123,7 +123,7 @@ class Games extends React.Component<GamesProps, GamesState> {
     return (
       <Page
         renderToolbar={this.renderToolbar}
-        renderBottomToolbar={this.rendert}
+        renderBottomToolbar={this.renderVersionToolbar}
       >
         <IdentityContainer>{this.renderCurrentIdentity()}</IdentityContainer>
         <Container>
@@ -157,7 +157,7 @@ export default class App extends React.Component {
     });
 
     window.onbeforeunload = (e: any) => {
-      var dialogText = 'Dialog text here';
+      var dialogText = 'Are you sure you want to leave the page?';
       e.returnValue = dialogText;
       return dialogText;
     };

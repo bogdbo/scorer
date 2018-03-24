@@ -66,7 +66,7 @@ interface State {
 }
 
 interface Props {
-  onPoints: (points: Number) => void;
+  onPoints: (hit: number, multiplier: number) => void;
   onUndo: () => void;
 }
 
@@ -83,7 +83,7 @@ export class X01Points extends React.Component<Props, State> {
         onClick={() => {
           const points = value * this.state.multiplier;
           if (points <= 60) {
-            this.props.onPoints(value * this.state.multiplier);
+            this.props.onPoints(value, this.state.multiplier);
           } else {
             Ons.notification.toast('Tripple bull is not a valid hit.', {
               timeout: 1500
@@ -146,7 +146,7 @@ export class X01Points extends React.Component<Props, State> {
         <Undo onClick={this.props.onUndo}>Undo</Undo>
         <Miss
           onClick={() => {
-            this.props.onPoints(0);
+            this.props.onPoints(0, 1);
             this.setState({ multiplier: 1 });
           }}
         >

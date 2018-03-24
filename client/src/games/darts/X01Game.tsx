@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
 import { Page, Toolbar, Navigator, BackButton } from 'react-onsenui';
-import { X01Settings, X01Game, DartsPlayer } from './models';
+import { X01Settings, X01Game, DartsPlayer, DartsLeg } from './models';
 import { User } from '../../service';
 import * as Ons from 'onsenui';
 
@@ -28,6 +28,7 @@ interface Props {
 interface State {
   game: X01Game;
   currentPlayer: string;
+  gameOver?: boolean;
 }
 
 export class X01GamePage extends React.Component<Props, State> {
@@ -53,12 +54,46 @@ export class X01GamePage extends React.Component<Props, State> {
     this.state = { game, currentPlayer: this.props.players[0].username };
   };
 
-  handlePoints = (points: number) => {
+  isValidClosingMultiplier = (multiplier: 1 | 2 | 3) => {
+    const legType: DartsLeg = Math.pow(2, multiplier - 1);
+    return (this.props.settings.endingLeg & legType) === legType;
+  };
+
+  handlePoints = async (hit: number, multiplier: 1 | 2 | 3) => {
     const game = this.state.game;
-    var currentPlayer = game.players[this.state.currentPlayer];
+    const currentPlayer: DartsPlayer = game.players[this.state.currentPlayer];
+    const points = hit * multiplier;
     currentPlayer.score -= points;
-    game.history.push({ username: this.state.currentPlayer, points });
-    this.setState({ game, currentPlayer: this.tryMoveNextPlayer() });
+
+    const isValidClosingMultiplier = this.isValidClosingMultiplier(multiplier);
+    const isWinner = currentPlayer.score === 0 && isValidClosingMultiplier;
+    const isFail =
+      (currentPlayer.score === 0 && !isValidClosingMultiplier) ||
+      currentPlayer.score < 0 ||
+      (currentPlayer.score === 1 &&
+        (this.props.settings.endingLeg & DartsLeg.Single) === 0);
+
+    if (isWinner) {
+      currentPlayer.winner = true; // mark winner
+      game.history.push({ username: this.state.currentPlayer, points }); // update history
+      this.setState({ gameOver: true });
+      var result: any = await Ons.notification.confirm(
+        `Congratulations ${this.state.currentPlayer}! Post result to slack?`
+      );
+
+      if (result === 1) {
+        Ons.notification.toast('Posted to slack', { timeout: 1500 });
+      }
+    } else if (isFail) {
+      currentPlayer.score += points; // undo points
+      game.history.push({ username: this.state.currentPlayer, points: 0 }); // update history
+      this.setState({ currentPlayer: this.updateNextPlayer(true) });
+    } else {
+      game.history.push({ username: this.state.currentPlayer, points }); // update history
+      this.setState({ currentPlayer: this.updateNextPlayer() });
+    }
+
+    this.setState({ game });
   };
 
   handleUndo = () => {
@@ -72,14 +107,15 @@ export class X01GamePage extends React.Component<Props, State> {
     this.setState({ currentPlayer: lastMove.username, game });
   };
 
-  tryMoveNextPlayer = () => {
+  updateNextPlayer = (force?: boolean) => {
     const game = this.state.game;
     const lastThreeShots = game.history.slice(-3);
-    if (lastThreeShots.length < 3) {
+    if (!force && lastThreeShots.length < 3) {
       return this.state.currentPlayer;
     }
 
     if (
+      force ||
       lastThreeShots.filter(s => s.username === this.state.currentPlayer)
         .length === 3
     ) {
@@ -104,6 +140,11 @@ export class X01GamePage extends React.Component<Props, State> {
   };
 
   handleBackButton = async () => {
+    if (this.state.gameOver) {
+      this.props.navigator.popPage();
+      return;
+    }
+
     const result: any = await Ons.notification.confirm(
       'Are you sure you want to end the current game?',
       { title: 'End game' }
@@ -129,7 +170,9 @@ export class X01GamePage extends React.Component<Props, State> {
               />
             ))}
           </Players>
-          <X01Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
+          {!this.state.gameOver && (
+            <X01Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
+          )}
         </Container>
       </Page>
     );

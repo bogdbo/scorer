@@ -29,12 +29,18 @@ export const X01SettingsPage: React.SFC<Props> = (props: Props) => {
           props.settings.startingLeg |= key;
         } else {
           props.settings.startingLeg &= ~key;
+          if (props.settings.startingLeg === 0) {
+            props.settings.startingLeg = DartsLeg.Single;
+          }
         }
       } else {
         if (e.target.checked) {
           props.settings.endingLeg |= key;
         } else {
           props.settings.endingLeg &= ~key;
+          if (props.settings.endingLeg === 0) {
+            props.settings.endingLeg = DartsLeg.Double;
+          }
         }
       }
 
