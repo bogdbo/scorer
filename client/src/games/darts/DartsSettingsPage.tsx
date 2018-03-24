@@ -71,7 +71,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     return (
       <Fab
         disabled={this.state.selectedPlayers.length < 1}
-        position="bottom right"
+        position="bottom center"
         onClick={() =>
           this.props.navigator.pushPage({
             comp: X01GamePage,
