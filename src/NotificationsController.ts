@@ -13,6 +13,9 @@ export class NotificationController {
       res.sendStatus(400);
     } else {
       try {
+        // force configured channel and if not configured (empty)
+        // it will post to default webhook channel
+        req.body.channel = process.env.DARTS_CHANNEL;
         const response: AxiosResponse<any> = await axios.post<any>(
           process.env.SLACK_WEBHOOK,
           req.body

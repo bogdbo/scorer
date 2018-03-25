@@ -101,11 +101,12 @@ export class X01GamePage extends React.Component<Props, State> {
         this.setState({ showModal: true });
         try {
           await Service.notify(message);
-          this.setState({ showModal: false });
           Ons.notification.toast('Posted to slack', { timeout: 1500 });
         } catch (ex) {
           Ons.notification.toast('Could not post to slack', { timeout: 1500 });
         }
+
+        this.setState({ showModal: false });
       }
     } else if (isFail) {
       currentPlayer.score += points; // undo points
