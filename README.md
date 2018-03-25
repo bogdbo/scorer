@@ -7,6 +7,7 @@ Dev
 ```NODE_ENV=local
  DB_CONNECTION_STRING=mongodb://localhost  
  PORT=5000
+ NODE_ENV=[production | ...]
 ```
 
 2.  run `heroku local dev`
