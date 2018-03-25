@@ -8,8 +8,8 @@ Dev
  NODE_ENV=local
  DB_CONNECTION_STRING=mongodb://localhost  
  PORT=5000
- SLACK_WEBHOOK=<webhook url>
- DARTS_CHANNEL=<channel name>
+ SLACK_WEBHOOK=https://hooks.slack.com/services/....
+ DARTS_CHANNEL=darts
 ```
 
 2.  run `heroku local dev`
