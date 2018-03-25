@@ -1,11 +1,12 @@
 import { X01Settings, DartsLeg } from './games/darts/models';
+import axios from 'axios';
 
 export interface User {
   username: string;
 }
 
 export class Service {
-  // private static API = 'api/v1';
+  private static API = 'api/v1';
   private static CURRENT_USER = 'CURRENT_USER';
   private static X01SETTINGS = 'X01SETTINGS';
   private static users = [
@@ -47,6 +48,11 @@ export class Service {
   static newGame() {
     // return axios.put<Darts>(`${this.API}/darts`);
     return new Promise<{ data: any }>(r => r({ data: { players: {} } }));
+  }
+
+  // TODO: Accept game object
+  static async notify(data: any) {
+    return axios.post(`${this.API}/darts/notify`, data);
   }
 
   static getCurrentIdentity() {

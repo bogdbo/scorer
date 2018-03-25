@@ -1,14 +1,17 @@
 import * as express from 'express';
 import * as path from 'path';
-import { MongoClient } from 'mongodb';
 import { UserController } from './src/UserController';
 import { DartsController } from './src/DartsController';
+import { NotificationController } from './src/NotificationsController';
+import { json } from 'body-parser';
 
 var app = express();
 app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(json());
 
 app.get('/api/v1/users', UserController.list);
-app.put('/api/v1/darts', DartsController.newGame);
+app.post('/api/v1/darts/notify', NotificationController.notify);
+app.post('/api/v1/darts', DartsController.newGame);
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.

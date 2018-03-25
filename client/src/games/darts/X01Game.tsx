@@ -2,9 +2,9 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
-import { Page, Toolbar, Navigator, BackButton } from 'react-onsenui';
+import { Page, Toolbar, Navigator, BackButton, Modal } from 'react-onsenui';
 import { X01Settings, X01Game, DartsPlayer, DartsLeg } from './models';
-import { User } from '../../service';
+import { User, Service } from '../../service';
 import * as Ons from 'onsenui';
 
 const Container = styled.div`
@@ -29,6 +29,7 @@ interface State {
   game: X01Game;
   currentPlayer: string;
   gameOver?: boolean;
+  showModal?: boolean;
 }
 
 export class X01GamePage extends React.Component<Props, State> {
@@ -82,7 +83,29 @@ export class X01GamePage extends React.Component<Props, State> {
       );
 
       if (result === 1) {
-        Ons.notification.toast('Posted to slack', { timeout: 1500 });
+        const throws = game.history.filter(
+          h => h.username === this.state.currentPlayer
+        );
+        const otherPlayers = Object.keys(game.players)
+          .filter(f => f !== this.state.currentPlayer)
+          .map(p => `@${p}`)
+          .join(', ');
+
+        var message = {
+          text: `@${this.state.currentPlayer} won a *${
+            this.props.settings.startScore
+          } game* in ${throws.length} throws against ${otherPlayers}`,
+          parse: 'full'
+        };
+
+        this.setState({ showModal: true });
+        try {
+          await Service.notify(message);
+          this.setState({ showModal: false });
+          Ons.notification.toast('Posted to slack', { timeout: 1500 });
+        } catch (ex) {
+          Ons.notification.toast('Could not post to slack', { timeout: 1500 });
+        }
       }
     } else if (isFail) {
       currentPlayer.score += points; // undo points
@@ -155,9 +178,17 @@ export class X01GamePage extends React.Component<Props, State> {
     }
   };
 
+  renderModal = () => {
+    return (
+      <Modal isOpen={this.state.showModal}>
+        <p>Please wait...</p>
+      </Modal>
+    );
+  };
+
   render() {
     return (
-      <Page renderToolbar={this.renderToolbar}>
+      <Page renderToolbar={this.renderToolbar} renderModal={this.renderModal}>
         <Container>
           <Players>
             {Object.keys(this.state.game.players).map((p, i) => (

@@ -1,4 +1,3 @@
-import { MongoClient, ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';

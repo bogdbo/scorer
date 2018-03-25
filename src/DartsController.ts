@@ -1,8 +1,6 @@
-import { MongoClient } from 'mongodb';
 import { Request, Response } from 'express';
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
-import { ObjectId } from 'bson';
 
 const connectionString = process.env.DB_CONNECTION_STRING as string;
 
