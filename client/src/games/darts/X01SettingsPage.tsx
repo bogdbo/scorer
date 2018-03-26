@@ -85,7 +85,7 @@ export const X01SettingsPage: React.SFC<Props> = (props: Props) => {
   };
 
   const handleStartingScoreChange = (e: any) => {
-    props.settings.startScore = e.target.value;
+    props.settings.startScore = parseInt(e.target.value, 0);
     props.onSettingsChanged(props.settings);
   };
 

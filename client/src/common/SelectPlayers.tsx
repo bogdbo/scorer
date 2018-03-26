@@ -1,12 +1,6 @@
 import * as React from 'react';
 import { Service, User } from '../service';
-import {
-  Checkbox,
-  Page,
-  ProgressCircular,
-  List,
-  ListItem
-} from 'react-onsenui';
+import { Page, ProgressCircular, List, ListItem } from 'react-onsenui';
 import styled from 'styled-components';
 
 const ProgressContainer = styled.div`
@@ -63,12 +57,13 @@ export class SelectPlayers extends React.Component<Props, State> {
     return (
       <ListItem key={user.username} tappable={true}>
         <label className="left">
-          <Checkbox
+          <input
+            type="checkbox"
             disabled={
               this.state.selectedUsers.filter(u => u.username === user.username)
                 .length === 0 && this.state.selectedUsers.length === 3
             }
-            inputId={`checkbox-${user.username}`}
+            id={`checkbox-${user.username}`}
             onChange={this.getUserClickHandler(user)}
           />
         </label>

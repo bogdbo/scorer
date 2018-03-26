@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  Tabbar,
   Tab,
   TabbarRenderTab,
   Page,
@@ -15,6 +14,7 @@ import { X01SettingsPage } from './X01SettingsPage';
 import { User, Service } from '../../service';
 import { X01Settings } from './models';
 import { X01GamePage } from './X01Game';
+import TabbarWrapper from '../../common/TabBarWrapper';
 
 interface Props {
   navigator: Navigator;
@@ -104,7 +104,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
         renderToolbar={this.renderToolbar}
         renderFixed={this.renderStartGameButton}
       >
-        <Tabbar
+        <TabbarWrapper
           swipeable={true}
           position="auto"
           animation="none"

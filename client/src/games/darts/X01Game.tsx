@@ -33,12 +33,14 @@ interface State {
 }
 
 export class X01GamePage extends React.Component<Props, State> {
+  gameStarted: boolean;
+
   constructor(props: Props) {
     super(props);
-    this.initNewGame();
+    this.initGame();
   }
 
-  initNewGame = () => {
+  initGame = () => {
     // TODO: POST new game
     // var result = await Service.newGame();
     const game: X01Game = {
@@ -55,59 +57,35 @@ export class X01GamePage extends React.Component<Props, State> {
     this.state = { game, currentPlayer: this.props.players[0].username };
   };
 
-  isValidClosingMultiplier = (multiplier: 1 | 2 | 3) => {
+  isValidMultiplier = (leg: DartsLeg, multiplier: 1 | 2 | 3): boolean => {
     const legType: DartsLeg = Math.pow(2, multiplier - 1);
-    return (this.props.settings.endingLeg & legType) === legType;
+    return (leg & legType) === legType;
   };
 
-  handlePoints = async (hit: number, multiplier: 1 | 2 | 3) => {
+  handleThrow = async (hit: number, multiplier: 1 | 2 | 3) => {
     const game = this.state.game;
     const currentPlayer: DartsPlayer = game.players[this.state.currentPlayer];
+
+    if (
+      !this.gameStarted &&
+      !this.isValidMultiplier(this.props.settings.startingLeg, multiplier)
+    ) {
+      game.history.push({ username: this.state.currentPlayer, points: 0 }); // update history
+      this.setState({ currentPlayer: this.updateNextPlayer(true) });
+      return;
+    } else {
+      this.gameStarted = true;
+    }
+
     const points = hit * multiplier;
     currentPlayer.score -= points;
 
-    const isValidClosingMultiplier = this.isValidClosingMultiplier(multiplier);
-    const isWinner = currentPlayer.score === 0 && isValidClosingMultiplier;
-    const isFail =
-      (currentPlayer.score === 0 && !isValidClosingMultiplier) ||
-      currentPlayer.score < 0 ||
-      (currentPlayer.score === 1 &&
-        (this.props.settings.endingLeg & DartsLeg.Single) === 0);
-
+    const { isWinner, isFail } = this.checkEndgame(currentPlayer, multiplier);
     if (isWinner) {
       currentPlayer.winner = true; // mark winner
       game.history.push({ username: this.state.currentPlayer, points }); // update history
       this.setState({ gameOver: true });
-      var result: any = await Ons.notification.confirm(
-        `Congratulations ${this.state.currentPlayer}! Post result to slack?`
-      );
-
-      if (result === 1) {
-        const throws = game.history.filter(
-          h => h.username === this.state.currentPlayer
-        );
-        const otherPlayers = Object.keys(game.players)
-          .filter(f => f !== this.state.currentPlayer)
-          .map(p => `@${p}`)
-          .join(', ');
-
-        var message = {
-          text: `@${this.state.currentPlayer} won a *${
-            this.props.settings.startScore
-          } game* in ${throws.length} throws against ${otherPlayers}`,
-          parse: 'full'
-        };
-
-        this.setState({ showModal: true });
-        try {
-          await Service.notify(message);
-          Ons.notification.toast('Posted to slack', { timeout: 1500 });
-        } catch (ex) {
-          Ons.notification.toast('Could not post to slack', { timeout: 1500 });
-        }
-
-        this.setState({ showModal: false });
-      }
+      await this.handleGameEnd();
     } else if (isFail) {
       currentPlayer.score += points; // undo points
       game.history.push({ username: this.state.currentPlayer, points: 0 }); // update history
@@ -187,6 +165,51 @@ export class X01GamePage extends React.Component<Props, State> {
     );
   };
 
+  checkEndgame = (currentPlayer: DartsPlayer, multiplier: 1 | 2 | 3) => {
+    const isValidClosingMultiplier = this.isValidMultiplier(
+      this.props.settings.endingLeg,
+      multiplier
+    );
+    const isWinner = currentPlayer.score === 0 && isValidClosingMultiplier;
+    const isFail =
+      (currentPlayer.score === 0 && !isValidClosingMultiplier) ||
+      currentPlayer.score < 0 ||
+      (currentPlayer.score === 1 &&
+        (this.props.settings.endingLeg & DartsLeg.Single) === 0);
+
+    return { isWinner, isFail };
+  };
+
+  handleGameEnd = async () => {
+    const { game, currentPlayer } = this.state;
+    var result: any = await Ons.notification.confirm(
+      `Congratulations ${currentPlayer}! Post result to slack?`
+    );
+    if (result === 1) {
+      const throws = this.state.game.history.filter(
+        h => h.username === this.state.currentPlayer
+      );
+      const otherPlayers = Object.keys(game.players)
+        .filter(f => f !== currentPlayer)
+        .map(p => `@${p}`)
+        .join(', ');
+      var message = {
+        text: `@${currentPlayer} won a *${
+          this.props.settings.startScore
+        } game* in ${throws.length} throws against ${otherPlayers}`,
+        parse: 'full'
+      };
+      this.setState({ showModal: true });
+      try {
+        await Service.notify(message);
+        Ons.notification.toast('Posted to slack', { timeout: 1500 });
+      } catch (ex) {
+        Ons.notification.toast('Could not post to slack', { timeout: 1500 });
+      }
+      this.setState({ showModal: false });
+    }
+  };
+
   render() {
     return (
       <Page renderToolbar={this.renderToolbar} renderModal={this.renderModal}>
@@ -203,7 +226,7 @@ export class X01GamePage extends React.Component<Props, State> {
             ))}
           </Players>
           {!this.state.gameOver && (
-            <X01Points onPoints={this.handlePoints} onUndo={this.handleUndo} />
+            <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
           )}
         </Container>
       </Page>

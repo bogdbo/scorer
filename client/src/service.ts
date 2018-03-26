@@ -35,13 +35,14 @@ export class Service {
     { username: 'sorin.popa' },
     { username: 'stefan.hurjui' },
     { username: 'ștefii.trif' },
+    { username: 'vlad.chincisan' },
     { username: 'voicu.seiche' }
   ];
 
   static getUsers() {
     // return axios.get<User[]>(`${this.API}/users`);
     return new Promise<{ data: any }>(resolve => {
-      setTimeout(resolve, 500, { data: this.users });
+      resolve({ data: this.users });
     });
   }
 
