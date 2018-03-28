@@ -1,22 +1,21 @@
 import * as React from 'react';
-import { ThrowHistory } from './models';
+import { TurnDetails, TurnResult } from './models';
 import styled from 'styled-components';
 import { Card } from 'react-onsenui';
 
-interface Props {
-  username: string;
-  score: number;
-  active: boolean;
-  history: ThrowHistory[];
-}
-
 const PlayerCard = styled.div`
-  opacity: ${(props: { active: boolean }) => (props.active ? 1 : 0.4)};
+  opacity: ${(props: { active: boolean }) => (props.active ? 1 : 0.6)};
+  height: 90%;
   flex: 1 0 50%;
+  max-width: 50%;
   > ons-card {
     margin: 2px;
     padding: 5px;
     border-radius: 0;
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
   }
 `;
 
@@ -25,20 +24,44 @@ const LastHits = styled.div`
   margin-top: 10px;
   margin-bottom: 10px;
   justify-content: space-around;
+  color: ${(p: { valid: boolean }) => (p.valid ? 'inherit' : 'red')};
 `;
 
+const PlayerName = styled.div`
+  font-size: 1.1rem;
+  font-weight: bold;
+`;
+
+const Score = styled.div`
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  font-family: monospace;
+`;
+
+interface Props {
+  username: string;
+  score: number;
+  active: boolean;
+  lastTurn?: TurnDetails;
+}
+
 export const Player: React.SFC<Props> = (props: Props) => {
-  const getHistory = (history: ThrowHistory[]) => {
-    var currentUserHistory = history
-      .filter(h => h.username === props.username)
-      .slice(-3);
-    return currentUserHistory.map((h, i) => (
-      <div key={h.username + i}>{h.points}</div>
+  const getHistory = () => {
+    if (!props.lastTurn || !props.lastTurn.throws) {
+      return <span>Please wait</span>;
+    }
+
+    if (props.lastTurn && props.lastTurn.throws.length === 0) {
+      return <span>Your turn</span>;
+    }
+
+    return props.lastTurn.throws.map((p, i) => (
+      <div key={props.username + i}>{p}</div>
     ));
   };
 
   return (
-    // tslint:disable-next-line:no-console
     <PlayerCard
       innerRef={(ref: HTMLDivElement) =>
         ref &&
@@ -52,11 +75,13 @@ export const Player: React.SFC<Props> = (props: Props) => {
       active={props.active}
     >
       <Card>
-        <div>{props.username}</div>
-        <div>
-          <b>{props.score}</b>
-        </div>
-        <LastHits>{getHistory(props.history)}</LastHits>
+        <PlayerName>{props.username}</PlayerName>
+        <Score>{props.score}</Score>
+        <LastHits
+          valid={!props.lastTurn || props.lastTurn.valid === TurnResult.Valid}
+        >
+          {getHistory()}
+        </LastHits>
       </Card>
     </PlayerCard>
   );

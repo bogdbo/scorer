@@ -3,9 +3,16 @@ import styled from 'styled-components';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
 import { Page, Toolbar, Navigator, BackButton, Modal } from 'react-onsenui';
-import { X01Settings, X01Game, DartsPlayer, DartsLeg } from './models';
+import {
+  X01Settings,
+  X01Game,
+  DartsLeg,
+  TurnDetails,
+  TurnResult
+} from './models';
 import { User, Service } from '../../service';
 import * as Ons from 'onsenui';
+import * as _ from 'lodash';
 
 const Container = styled.div`
   display: grid;
@@ -17,6 +24,7 @@ const Players = styled.div`
   display: flex;
   align-items: center;
   overflow: scroll;
+  height: 100%;
 `;
 
 interface Props {
@@ -27,8 +35,7 @@ interface Props {
 
 interface State {
   game: X01Game;
-  currentPlayer: string;
-  gameOver?: boolean;
+  turn: TurnDetails;
   showModal?: boolean;
 }
 
@@ -46,15 +53,28 @@ export class X01GamePage extends React.Component<Props, State> {
     const game: X01Game = {
       _id: 'todo',
       createdAt: new Date(),
-      players: {},
+      scores: {},
+      players: [],
       history: []
     };
+
     this.props.players.forEach(u => {
-      game.players[u.username] = {} as DartsPlayer;
-      game.players[u.username].score = this.props.settings.startScore;
+      game.players.push(u.username);
+      game.scores[u.username] = this.props.settings.startScore;
     });
 
-    this.state = { game, currentPlayer: this.props.players[0].username };
+    this.state = {
+      game,
+      turn: this.newTurn(this.props.players[0].username)
+    };
+  };
+
+  newTurn = (username: string) => {
+    return {
+      username,
+      throws: [],
+      valid: TurnResult.Valid
+    };
   };
 
   isValidMultiplier = (leg: DartsLeg, multiplier: 1 | 2 | 3): boolean => {
@@ -63,70 +83,81 @@ export class X01GamePage extends React.Component<Props, State> {
   };
 
   handleThrow = async (hit: number, multiplier: 1 | 2 | 3) => {
-    const game = this.state.game;
-    const currentPlayer: DartsPlayer = game.players[this.state.currentPlayer];
+    const { game, turn } = this.state;
+    const points = hit * multiplier;
+    turn.throws.push(points);
 
     if (
       !this.gameStarted &&
       !this.isValidMultiplier(this.props.settings.startingLeg, multiplier)
     ) {
-      game.history.push({ username: this.state.currentPlayer, points: 0 }); // update history
-      this.setState({ currentPlayer: this.updateNextPlayer(true) });
+      turn.valid = TurnResult.Bust;
+      this.setState({ game, turn: this.updateTurns(game, turn, true) });
       return;
     } else {
       this.gameStarted = true;
     }
 
-    const points = hit * multiplier;
-    currentPlayer.score -= points;
+    const { isWinner, isFail } = this.checkEndgame(
+      game.scores[turn.username] - points,
+      multiplier
+    );
 
-    const { isWinner, isFail } = this.checkEndgame(currentPlayer, multiplier);
     if (isWinner) {
-      currentPlayer.winner = true; // mark winner
-      game.history.push({ username: this.state.currentPlayer, points }); // update history
-      this.setState({ gameOver: true });
+      game.scores[turn.username] -= points;
+      game.winner = turn.username; // mark winner
+      this.setState({ game });
       await this.handleGameEnd();
     } else if (isFail) {
-      currentPlayer.score += points; // undo points
-      game.history.push({ username: this.state.currentPlayer, points: 0 }); // update history
-      this.setState({ currentPlayer: this.updateNextPlayer(true) });
+      // undo previous shots, except last one because it was not counted
+      _.dropRight(turn.throws, 1).forEach(
+        t => (game.scores[turn.username] += t)
+      );
+      turn.valid = TurnResult.Bust;
+      this.setState({ game, turn: this.updateTurns(game, turn, true) });
     } else {
-      game.history.push({ username: this.state.currentPlayer, points }); // update history
-      this.setState({ currentPlayer: this.updateNextPlayer() });
+      game.scores[turn.username] -= points;
+      this.setState({ game, turn: this.updateTurns(game, turn) });
     }
-
-    this.setState({ game });
   };
 
   handleUndo = () => {
-    const game = this.state.game;
-    const lastMove = game.history.pop();
-    if (!lastMove) {
+    const { game, turn } = this.state;
+    if (game.history.length === 0 && turn.throws.length === 0) {
       Ons.notification.toast('Nothing to undo.', { timeout: 1500 });
       return;
     }
-    game.players[lastMove.username].score += lastMove.points;
-    this.setState({ currentPlayer: lastMove.username, game });
+
+    if (_.isEmpty(turn.throws)) {
+      const previousTurn = game.history.pop() as TurnDetails;
+      const previousThrow = previousTurn.throws.pop() as number;
+      if (previousTurn.valid === TurnResult.Valid) {
+        game.scores[previousTurn.username] += previousThrow;
+      } else {
+        // the last turn can only be invalid because of the last throw
+        // we need to ignore it and restore the previous throws
+        previousTurn.throws.forEach(
+          t => (game.scores[previousTurn.username] -= t)
+        );
+        previousTurn.valid = TurnResult.Valid;
+      }
+      this.setState({ game, turn: previousTurn });
+    } else {
+      game.scores[turn.username] += turn.throws.pop() as number;
+      this.setState({ game, turn });
+    }
   };
 
-  updateNextPlayer = (force?: boolean) => {
-    const game = this.state.game;
-    const lastThreeShots = game.history.slice(-3);
-    if (!force && lastThreeShots.length < 3) {
-      return this.state.currentPlayer;
-    }
-
-    if (
-      force ||
-      lastThreeShots.filter(s => s.username === this.state.currentPlayer)
-        .length === 3
-    ) {
-      const players = Object.keys(this.state.game.players);
-      const currentPlayerIndex = players.indexOf(this.state.currentPlayer);
-      const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-      return players[nextPlayerIndex];
+  updateTurns = (game: X01Game, turn: TurnDetails, force?: boolean) => {
+    if (force || this.state.turn.throws.length === 3) {
+      const nextPlayer =
+        game.players[
+          (game.players.indexOf(turn.username) + 1) % game.players.length
+        ];
+      game.history.push(turn);
+      return this.newTurn(nextPlayer);
     } else {
-      return this.state.currentPlayer;
+      return this.state.turn;
     }
   };
 
@@ -142,7 +173,7 @@ export class X01GamePage extends React.Component<Props, State> {
   };
 
   handleBackButton = async () => {
-    if (this.state.gameOver) {
+    if (this.state.game.winner) {
       this.props.navigator.popPage();
       return;
     }
@@ -165,38 +196,37 @@ export class X01GamePage extends React.Component<Props, State> {
     );
   };
 
-  checkEndgame = (currentPlayer: DartsPlayer, multiplier: 1 | 2 | 3) => {
+  checkEndgame = (score: number, multiplier: 1 | 2 | 3) => {
     const isValidClosingMultiplier = this.isValidMultiplier(
       this.props.settings.endingLeg,
       multiplier
     );
-    const isWinner = currentPlayer.score === 0 && isValidClosingMultiplier;
+    const isWinner = score === 0 && isValidClosingMultiplier;
     const isFail =
-      (currentPlayer.score === 0 && !isValidClosingMultiplier) ||
-      currentPlayer.score < 0 ||
-      (currentPlayer.score === 1 &&
-        (this.props.settings.endingLeg & DartsLeg.Single) === 0);
+      (score === 0 && !isValidClosingMultiplier) ||
+      score < 0 ||
+      (score === 1 && (this.props.settings.endingLeg & DartsLeg.Single) === 0);
 
     return { isWinner, isFail };
   };
 
   handleGameEnd = async () => {
-    const { game, currentPlayer } = this.state;
+    const { game, turn } = this.state;
     var result: any = await Ons.notification.confirm(
-      `Congratulations ${currentPlayer}! Post result to slack?`
+      `Congratulations ${turn.username}! Post result to slack?`
     );
     if (result === 1) {
-      const throws = this.state.game.history.filter(
-        h => h.username === this.state.currentPlayer
+      const turns = this.state.game.history.filter(
+        h => h.username === turn.username
       );
-      const otherPlayers = Object.keys(game.players)
-        .filter(f => f !== currentPlayer)
+      const otherPlayers = game.players
+        .filter(f => f !== turn.username)
         .map(p => `@${p}`)
         .join(', ');
       var message = {
-        text: `@${currentPlayer} won a *${
+        text: `@${turn.username} won a *${
           this.props.settings.startScore
-        } game* in ${throws.length} throws against ${otherPlayers}`,
+        } game* in ${turns.length} turns against ${otherPlayers}`,
         parse: 'full'
       };
       this.setState({ showModal: true });
@@ -210,22 +240,35 @@ export class X01GamePage extends React.Component<Props, State> {
     }
   };
 
+  renderPlayers = () => {
+    return (
+      <Players>
+        {this.state.game.players.map((p, i) => {
+          const isActive = this.state.turn.username === p;
+          return (
+            <Player
+              active={isActive}
+              key={p}
+              username={p}
+              score={this.state.game.scores[p]}
+              lastTurn={
+                isActive
+                  ? this.state.turn
+                  : _.findLast(this.state.game.history, { username: p })
+              }
+            />
+          );
+        })}
+      </Players>
+    );
+  };
+
   render() {
     return (
       <Page renderToolbar={this.renderToolbar} renderModal={this.renderModal}>
         <Container>
-          <Players>
-            {Object.keys(this.state.game.players).map((p, i) => (
-              <Player
-                active={this.state.currentPlayer === p}
-                key={p}
-                username={p}
-                score={this.state.game.players[p].score}
-                history={this.state.game.history}
-              />
-            ))}
-          </Players>
-          {!this.state.gameOver && (
+          {this.renderPlayers()}
+          {!this.state.game.winner && (
             <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
           )}
         </Container>

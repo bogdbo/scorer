@@ -13,16 +13,19 @@ export interface X01Settings {
 export interface X01Game {
   _id: String;
   createdAt: Date;
-  players: { [key: string]: DartsPlayer };
-  history: ThrowHistory[];
+  winner?: string;
+  players: string[];
+  scores: { [key: string]: number };
+  history: TurnDetails[];
 }
 
-export interface DartsPlayer {
-  winner: boolean;
-  score: number;
+export enum TurnResult {
+  Valid = 0,
+  Bust = 1 << 0
 }
 
-export interface ThrowHistory {
+export interface TurnDetails {
   username: string;
-  points: number;
+  throws: number[];
+  valid: TurnResult;
 }
