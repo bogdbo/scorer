@@ -70,7 +70,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
   renderStartGameButton = () => {
     return (
       <Fab
-        disabled={this.state.selectedPlayers.length < 1}
+        disabled={this.state.selectedPlayers.length < 2}
         position="bottom center"
         onClick={() =>
           this.props.navigator.pushPage({
