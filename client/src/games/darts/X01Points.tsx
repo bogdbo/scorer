@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import * as Ons from 'onsenui';
+import { Icon } from 'react-onsenui';
 
 const Container = styled.div`
   display: grid;
@@ -12,7 +13,8 @@ const Container = styled.div`
 `;
 
 const Button = styled.div`
-  font-size: 1.1rem;
+  cursor: pointer;
+  font-size: 1.2rem;
   display: flex;
   flex: 1 1 auto;
   vertical-align: middle;
@@ -25,6 +27,10 @@ const Button = styled.div`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   background-color: ${(props: { odd?: boolean }) =>
     props.odd ? '#B9C6C9' : '#C6D2D4'};
+
+  :active {
+    background-color: #e97f02;
+  }
 `;
 
 interface MultiplierProps {
@@ -52,6 +58,10 @@ const Undo = styled(Button)`
   grid-column: 2;
   grid-column-end: 5;
   background-color: #e6c1b3;
+
+  > span {
+    padding-left: 5px;
+  }
 `;
 
 const Miss = styled(Button)`
@@ -59,6 +69,7 @@ const Miss = styled(Button)`
   grid-column: 5;
   grid-column-end: 6;
   background-color: #c77474;
+  flex-flow: column-reverse;
 `;
 
 interface State {
@@ -76,10 +87,10 @@ export class X01Points extends React.Component<Props, State> {
     this.state = { multiplier: 1 };
   }
 
-  getButton(text: string, value: number) {
+  getButton(text: string | JSX.Element, value: number) {
     return (
       <Button
-        key={text}
+        key={value}
         onClick={() => {
           const points = value * this.state.multiplier;
           if (points <= 60) {
@@ -105,7 +116,7 @@ export class X01Points extends React.Component<Props, State> {
       elems.push(this.getButton(i.toString(), i));
     }
 
-    elems.push(this.getButton('BULL', 25));
+    elems.push(this.getButton(<Icon icon="bullseye" size={40} />, 25));
     return elems;
   }
 
@@ -143,14 +154,18 @@ export class X01Points extends React.Component<Props, State> {
       <Container>
         {this.renderMultipliers()}
         {this.renderButtons()}
-        <Undo onClick={this.props.onUndo}>Undo</Undo>
+        <Undo onClick={this.props.onUndo}>
+          <Icon icon="undo" />
+          <span>Undo</span>
+        </Undo>
         <Miss
           onClick={() => {
             this.props.onPoints(0, 1);
             this.setState({ multiplier: 1 });
           }}
         >
-          Miss
+          <Icon icon="md-arrow-missed" />
+          <span>Miss</span>
         </Miss>
       </Container>
     );

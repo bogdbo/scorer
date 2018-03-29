@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
-import { Page, Toolbar, Navigator, BackButton, Modal } from 'react-onsenui';
+import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
 import {
   X01Settings,
   X01Game,
@@ -25,6 +25,12 @@ const Players = styled.div`
   align-items: center;
   overflow: scroll;
   height: 100%;
+`;
+
+const BackButtonWrapper = styled.div`
+  position: fixed;
+  background: #ececec;
+  z-index: 10;
 `;
 
 interface Props {
@@ -161,17 +167,6 @@ export class X01GamePage extends React.Component<Props, State> {
     }
   };
 
-  renderToolbar = () => {
-    return (
-      <Toolbar>
-        <div className="left">
-          <BackButton onClick={this.handleBackButton} />
-        </div>
-        <div className="center">{this.props.settings.startScore} Game</div>
-      </Toolbar>
-    );
-  };
-
   handleBackButton = async () => {
     if (this.state.game.winner) {
       this.props.navigator.popPage();
@@ -243,6 +238,9 @@ export class X01GamePage extends React.Component<Props, State> {
   renderPlayers = () => {
     return (
       <Players>
+        <BackButtonWrapper>
+          <BackButton onClick={this.handleBackButton} />
+        </BackButtonWrapper>
         {this.state.game.players.map((p, i) => {
           const isActive = this.state.turn.username === p;
           return (
@@ -265,7 +263,7 @@ export class X01GamePage extends React.Component<Props, State> {
 
   render() {
     return (
-      <Page renderToolbar={this.renderToolbar} renderModal={this.renderModal}>
+      <Page renderModal={this.renderModal}>
         <Container>
           {this.renderPlayers()}
           {!this.state.game.winner && (

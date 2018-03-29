@@ -59,10 +59,6 @@ export class SelectPlayers extends React.Component<Props, State> {
         <label className="left">
           <input
             type="checkbox"
-            disabled={
-              this.state.selectedUsers.filter(u => u.username === user.username)
-                .length === 0 && this.state.selectedUsers.length === 3
-            }
             id={`checkbox-${user.username}`}
             onChange={this.getUserClickHandler(user)}
           />
