@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TurnDetails, TurnResult } from './models';
 import styled, { keyframes } from 'styled-components';
-import { Card, Icon } from 'react-onsenui';
+import { Card } from 'react-onsenui';
 
 const PlayerCard = styled.div`
   opacity: ${(props: { active: boolean }) => (props.active ? 1 : 0.6)};
