@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TurnDetails, TurnResult } from './models';
-import styled from 'styled-components';
-import { Card } from 'react-onsenui';
+import styled, { keyframes } from 'styled-components';
+import { Card, Icon } from 'react-onsenui';
 
 const PlayerCard = styled.div`
   opacity: ${(props: { active: boolean }) => (props.active ? 1 : 0.6)};
@@ -21,8 +21,6 @@ const PlayerCard = styled.div`
 
 const LastHits = styled.div`
   display: flex;
-  margin-top: 10px;
-  margin-bottom: 10px;
   justify-content: space-around;
   color: ${(p: { valid: boolean }) => (p.valid ? 'inherit' : 'red')};
 `;
@@ -34,9 +32,25 @@ const PlayerName = styled.div`
 
 const Score = styled.div`
   font-size: 3rem;
+  padding: 5px;
   font-weight: bold;
   text-align: center;
   font-family: monospace;
+`;
+
+const FlashScoreNumber = keyframes`
+  0% {
+    background-color: #4ECDC4;
+  }
+  100% {
+    background-color: none;
+  }
+`;
+
+const ScoreNumber = styled.div`
+  min-width: 20px;
+  text-align: center;
+  animation: ${FlashScoreNumber} 0.3s ease-in-out 2;
 `;
 
 interface Props {
@@ -57,7 +71,7 @@ export const Player: React.SFC<Props> = (props: Props) => {
     }
 
     return props.lastTurn.throws.map((p, i) => (
-      <div key={props.username + i}>{p}</div>
+      <ScoreNumber key={props.username + i}>{p}</ScoreNumber>
     ));
   };
 
