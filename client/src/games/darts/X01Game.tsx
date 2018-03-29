@@ -13,6 +13,7 @@ import {
 import { User, Service } from '../../service';
 import * as Ons from 'onsenui';
 import * as _ from 'lodash';
+import { X01PointsLandscape } from './X01PointsLandscape';
 
 const Container = styled.div`
   display: grid;
@@ -268,9 +269,15 @@ export class X01GamePage extends React.Component<Props, State> {
       <Page renderToolbar={this.renderToolbar} renderModal={this.renderModal}>
         <Container>
           {this.renderPlayers()}
-          {!this.state.game.winner && (
-            <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
-          )}
+          {!this.state.game.winner &&
+            (Ons.orientation.isLandscape() ? (
+              <X01PointsLandscape
+                onPoints={this.handleThrow}
+                onUndo={this.handleUndo}
+              />
+            ) : (
+              <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
+            ))}
         </Container>
       </Page>
     );
