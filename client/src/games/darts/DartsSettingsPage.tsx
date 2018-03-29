@@ -15,6 +15,7 @@ import { User, Service } from '../../service';
 import { X01Settings } from './models';
 import { X01GamePage } from './X01Game';
 import TabbarWrapper from '../../common/TabBarWrapper';
+import * as _ from 'lodash';
 
 interface Props {
   navigator: Navigator;
@@ -76,7 +77,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
           this.props.navigator.pushPage({
             comp: X01GamePage,
             props: {
-              players: this.state.selectedPlayers,
+              players: _.shuffle(this.state.selectedPlayers),
               settings: this.state.settings
             }
           })
