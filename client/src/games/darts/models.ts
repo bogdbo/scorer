@@ -13,6 +13,7 @@ export interface X01GameSettings {
 export interface X01Game {
   _id: String;
   createdAt: Date;
+  endedAt?: Date;
   winner?: string;
   players: string[];
   scores: { [key: string]: number };
@@ -52,6 +53,7 @@ export interface CricketTurnDetails {
 export interface CricketGame {
   _id: String;
   createdAt: Date;
+  endedAt?: Date;
   winner?: string;
   players: string[];
   scores: { [key: string]: { points: number; [key: number]: number } };

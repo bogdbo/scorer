@@ -125,6 +125,7 @@ export class X01GamePage extends React.Component<Props, State> {
     if (isWinner) {
       game.scores[turn.username] -= points;
       game.winner = turn.username; // mark winner
+      game.endedAt = new Date();
       this.setState({ game });
       await this.handleGameEnd();
     } else if (isFail) {

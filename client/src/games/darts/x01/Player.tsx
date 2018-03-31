@@ -28,6 +28,9 @@ const LastHits = styled.div`
 const PlayerName = styled.div`
   font-size: 1.1rem;
   font-weight: bold;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Score = styled.div`

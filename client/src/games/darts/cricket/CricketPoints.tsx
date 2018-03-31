@@ -5,8 +5,7 @@ import { Button } from '../../../common/PointButton';
 
 const Container = styled.div`
   display: grid;
-  grid-gap: 5px;
-  margin: 5px;
+  grid-gap: 2px;
   grid-template-columns: repeat(6, 1fr);
   grid-template-rows: repeat(8, 1fr);
   border-collapse: collapse;
@@ -17,16 +16,14 @@ const Undo = styled(Button)`
   grid-row: 1;
   grid-column: 5 / 7;
   background-color: #e6c1b3;
-
-  > span {
-    padding-left: 5px;
-  }
+  font-size: 1rem;
 `;
 
 const Miss = styled(Button)`
   grid-row: 1;
   grid-column: 1 / 5;
   background-color: #c77474;
+  font-size: 1rem;
 `;
 
 const PointButton = styled(Button)`
@@ -82,7 +79,6 @@ export class CricketPoints extends React.Component<Props, State> {
       <Container>
         {this.renderButtons()}
         <Undo onClick={this.props.onUndo}>
-          {/* <Icon icon="undo" /> */}
           <span>Undo</span>
         </Undo>
         <Miss
@@ -91,7 +87,6 @@ export class CricketPoints extends React.Component<Props, State> {
             this.setState({ multiplier: 1 });
           }}
         >
-          <Icon icon="md-arrow-missed" />
           <span>Miss</span>
         </Miss>
       </Container>

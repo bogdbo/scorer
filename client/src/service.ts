@@ -11,10 +11,11 @@ export class Service {
   private static X01SETTINGS = 'X01SETTINGS';
   private static users = [
     { username: 'alex.musat' },
+    { username: 'andrei.nechita' },
     { username: 'bogdan.boiculese' },
     { username: 'adrian.mihu' },
     { username: 'andrei.toma' },
-    { username: 'antonio' },
+    { username: 'antonio.bentia' },
     { username: 'bogdan.cotoarba' },
     { username: 'calin.stan' },
     { username: 'dan.lupusanschi' },
@@ -24,6 +25,7 @@ export class Service {
     { username: 'emilia.serban' },
     { username: 'horea.mihut' },
     { username: 'ionut.lupsan' },
+    { username: 'istvan.vezer' },
     { username: 'mihaela.fedor' },
     { username: 'monica.mosoiu' },
     { username: 'nicu.motoc' },

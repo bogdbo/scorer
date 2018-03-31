@@ -9,7 +9,6 @@ import {
 } from 'react-onsenui';
 import 'onsenui/css/onsenui.min.css';
 import 'onsenui/css/onsenui-core.min.css';
-// import 'onsenui/css/onsen-css-components.min.css';
 import 'src/common/custom-theme.css';
 import 'onsenui/css/onsenui-fonts.css';
 import styled from 'styled-components';
@@ -143,7 +142,12 @@ class Games extends React.Component<GamesProps, GamesState> {
               this.props.navigator.pushPage({ comp: CricketSettingsPage })
             }
           >
-            Cricket
+            {this.state.identitySelected &&
+            (Service.getCurrentIdentity() || '')
+              .toLowerCase()
+              .includes('antonio')
+              ? 'Crocket'
+              : 'Cricket'}
           </GameButton>
           <GameButton disabled={true}>Stats</GameButton>
         </Container>

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as Ons from 'onsenui';
 import styled, { injectGlobal } from 'styled-components';
-import { Page, Navigator, BackButton } from 'react-onsenui';
-import { User } from '../../../service';
+import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
+import { User, Service } from '../../../service';
 import {
   CricketGame,
   CricketTurnDetails,
@@ -31,10 +31,11 @@ const BackButtonWrapper = styled.div`
 
 const Container = styled.div`
   display: grid;
-  grid-template-rows: 1fr 9fr;
+  grid-template-rows: 10% 90%;
   grid-template-columns: repeat(3, 1fr) repeat(2, 1fr);
   height: 100vh;
   max-height: 100vh;
+  font-family: monospace;
 `;
 
 const PointsContainer = styled.div`
@@ -44,6 +45,8 @@ const PointsContainer = styled.div`
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
   flex: 1 1;
+  box-shadow: 0 2px 0px 2px #0000001c;
+  z-index: 10;
 `;
 
 const PlayersContainer = styled.div`
@@ -52,15 +55,12 @@ const PlayersContainer = styled.div`
   display: flex;
   overflow-x: overlay;
   flex: 1;
-  margin: 5px;
 `;
 
 const ThrowsContainer = styled.div`
   display: flex;
-  div:first-child {
-    opacity: 0.6;
-    margin-right: 80px;
-  }
+  justify-content: space-around;
+  flex: 1;
 `;
 
 const ThrowDetails = styled.div`
@@ -71,19 +71,21 @@ const ThrowDetails = styled.div`
 `;
 
 const ThrowValue = styled.span`
-  background-color: ${(p: { result: CricketThrowResult[] }) =>
-    p.result.some(r => r === CricketThrowResult.Invalid)
-      ? 'red'
-      : p.result.some(r => r === CricketThrowResult.Points)
-        ? 'green'
-        : p.result.some(r => r === CricketThrowResult.Hit)
-          ? 'blue '
-          : p.result.some(
-              r =>
-                r === CricketThrowResult.Hit || r === CricketThrowResult.Points
-            )
-            ? 'cyan'
-            : 'initial'};
+  padding-left: 3px;
+  padding-right: 3px;
+  color: #ffa500;
+  background-color: ${(p: { result: CricketThrowResult[] }) => {
+    const hasInvalid = p.result.indexOf(CricketThrowResult.Invalid) >= 0;
+    const hasHit = p.result.indexOf(CricketThrowResult.Hit) >= 0;
+    const hasPoints = p.result.indexOf(CricketThrowResult.Points) >= 0;
+    return hasInvalid && hasHit
+      ? '#987b47'
+      : hasHit && hasPoints
+        ? '#30e6e6'
+        : hasInvalid
+          ? 'red'
+          : hasHit ? 'blue ' : hasPoints ? 'green' : 'initial';
+  }};
 `;
 
 interface Props {
@@ -110,6 +112,14 @@ export class CricketGamePage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.initGame();
+  }
+
+  componentDidMount() {
+    if (Ons.orientation.isPortrait()) {
+      Ons.notification.toast('Landscape mode is recommended', {
+        timeout: 3000
+      });
+    }
   }
 
   initGame = () => {
@@ -141,7 +151,7 @@ export class CricketGamePage extends React.Component<Props, State> {
   };
 
   handleBackButton = async () => {
-    if (this.state.game.winner) {
+    if (this.state.game.endedAt) {
       this.props.navigator.popPage();
       return;
     }
@@ -165,7 +175,7 @@ export class CricketGamePage extends React.Component<Props, State> {
             {t.throw}
           </ThrowValue>
         ))}
-        <span>+{points} points</span>
+        <span>+{points}p</span>
       </>
     );
   };
@@ -178,11 +188,12 @@ export class CricketGamePage extends React.Component<Props, State> {
           <BackButton onClick={this.handleBackButton} />
         </BackButtonWrapper>
         <ThrowsContainer>
-          {previousThrow && (
-            <ThrowDetails>
-              {this.renderThrowDetails(previousThrow)}
-            </ThrowDetails>
-          )}
+          {Ons.orientation.isLandscape() &&
+            previousThrow && (
+              <ThrowDetails>
+                {this.renderThrowDetails(previousThrow)}
+              </ThrowDetails>
+            )}
           <ThrowDetails>
             {this.renderThrowDetails(this.state.turn)}
           </ThrowDetails>
@@ -211,6 +222,25 @@ export class CricketGamePage extends React.Component<Props, State> {
       } else {
         return this.state.turn;
       }
+    };
+
+    const checkEndgame = (): string[] => {
+      const hasClosed = (username: string) =>
+        Object.keys(game.scores[username]).every(
+          key => key === 'points' || game.scores[username][key] === 3
+        );
+
+      const currentUserHasClosed = hasClosed(turn.username);
+      const allClosed = game.players.every(p => hasClosed(p));
+      const maxScorePlayers = game.players.filter(
+        p => game.scores[p].points >= game.scores[turn.username].points
+      );
+
+      return allClosed
+        ? maxScorePlayers // all closed, nothing to play, either a tie either a win
+        : currentUserHasClosed && maxScorePlayers.length === 1
+          ? maxScorePlayers // currentUserClosed && has max points => winner
+          : []; // game is still open
     };
 
     const throwDistribution = [];
@@ -244,7 +274,22 @@ export class CricketGamePage extends React.Component<Props, State> {
     };
     turn.throws.push(currentThrow);
 
-    this.setState({ game, turn: updateTurns() });
+    var winners = checkEndgame();
+    if (winners.length === 1) {
+      game.winner = turn.username;
+      game.endedAt = new Date();
+    } else if (winners.length > 1) {
+      game.endedAt = new Date();
+      // todo: slack!
+      Ons.notification.toast(`Tie between ${winners.join(', ')}`, {
+        timeout: 1500
+      });
+    }
+
+    this.setState(
+      { game, turn: updateTurns() },
+      winners.length === 1 ? this.handleGameEnd : _.noop
+    );
   };
 
   handleUndo = () => {
@@ -269,20 +314,59 @@ export class CricketGamePage extends React.Component<Props, State> {
     this.setState({ game, turn: turn });
   };
 
+  handleGameEnd = async () => {
+    const { game } = this.state;
+    const winner: string = game.winner as string;
+    var result: any = await Ons.notification.confirm(
+      `Congratulations ${winner}! Post result to slack?`
+    );
+    if (result === 1) {
+      const otherPlayers = game.players
+        .filter(f => f !== winner)
+        .map(p => `@${p} _(${game.scores[p].points}p)_`)
+        .join(', ');
+      const turns = game.history.filter(h => h.username === winner).length;
+      var message = {
+        text: `@${winner} _(${
+          game.scores[winner].points
+        }p)_ won a *game of cricket* in ${turns} turns against ${otherPlayers}`,
+        parse: 'full'
+      };
+      this.setState({ showModal: true });
+      try {
+        await Service.notify(message);
+        Ons.notification.toast('Posted to slack', { timeout: 1500 });
+      } catch (ex) {
+        Ons.notification.toast('Could not post to slack', { timeout: 1500 });
+      }
+      this.setState({ showModal: false });
+    }
+  };
+
+  renderModal = () => {
+    return (
+      <Modal isOpen={this.state.showModal}>
+        <p>Please wait...</p>
+      </Modal>
+    );
+  };
+
   render() {
     return (
-      <Page>
+      <Page renderModal={this.renderModal}>
         <Container>
           <Header>{this.renderHeader()}</Header>
           <PlayersContainer>
             <CricketPlayers game={this.state.game} turn={this.state.turn} />
           </PlayersContainer>
-          <PointsContainer>
-            <CricketPoints
-              onPoints={this.handleThrow}
-              onUndo={this.handleUndo}
-            />
-          </PointsContainer>
+          {!this.state.game.endedAt && (
+            <PointsContainer>
+              <CricketPoints
+                onPoints={this.handleThrow}
+                onUndo={this.handleUndo}
+              />
+            </PointsContainer>
+          )}
         </Container>
       </Page>
     );
