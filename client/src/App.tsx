@@ -14,8 +14,9 @@ import 'src/common/custom-theme.css';
 import 'onsenui/css/onsenui-fonts.css';
 import styled from 'styled-components';
 import { Service } from './service';
-import { DartsSettingsPage } from './games/darts/DartsSettingsPage';
 import * as Ons from 'onsenui';
+import { X01SettingsPage } from './games/darts/x01/X01SettingsPage';
+import { CricketSettingsPage } from './games/darts/cricket/CricketSettingsPage';
 
 const Container = styled.div`
   display: flex;
@@ -131,13 +132,20 @@ class Games extends React.Component<GamesProps, GamesState> {
           <GameButton
             disabled={!this.state.identitySelected}
             onClick={() =>
-              this.props.navigator.pushPage({ comp: DartsSettingsPage })
+              this.props.navigator.pushPage({ comp: X01SettingsPage })
             }
           >
-            Darts
+            x01
           </GameButton>
-          <GameButton disabled={true}>Foosball</GameButton>
-          <GameButton disabled={true}>Fifa</GameButton>
+          <GameButton
+            disabled={!this.state.identitySelected}
+            onClick={() =>
+              this.props.navigator.pushPage({ comp: CricketSettingsPage })
+            }
+          >
+            Cricket
+          </GameButton>
+          <GameButton disabled={true}>Stats</GameButton>
         </Container>
       </Page>
     );

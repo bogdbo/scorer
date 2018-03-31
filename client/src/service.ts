@@ -1,4 +1,4 @@
-import { X01Settings, DartsLeg } from './games/darts/models';
+import { X01GameSettings, DartsLeg } from './games/darts/models';
 import axios from 'axios';
 
 export interface User {
@@ -64,7 +64,7 @@ export class Service {
     return window.localStorage.setItem(this.CURRENT_USER, value);
   }
 
-  static getX01Settings(): X01Settings {
+  static getX01Settings(): X01GameSettings {
     const persistedSettings = window.localStorage.getItem(this.X01SETTINGS);
     return persistedSettings
       ? JSON.parse(persistedSettings)
@@ -75,7 +75,7 @@ export class Service {
         };
   }
 
-  static setX01Settings(settings: X01Settings) {
+  static setX01Settings(settings: X01GameSettings) {
     return window.localStorage.setItem(
       this.X01SETTINGS,
       JSON.stringify(settings)

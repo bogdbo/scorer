@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Page, List, ListItem, Switch, ListHeader } from 'react-onsenui';
-import { X01Settings, DartsLeg } from './models';
+import { X01GameSettings, DartsLeg } from './../models';
 import styled from 'styled-components';
 
 const StartingScoreContainer = styled.div`
@@ -17,11 +17,11 @@ const StartingScoreContainer = styled.div`
 `;
 
 interface Props {
-  settings: X01Settings;
-  onSettingsChanged(gameSettings: X01Settings): void;
+  settings: X01GameSettings;
+  onSettingsChanged(gameSettings: X01GameSettings): void;
 }
 
-export const X01SettingsPage: React.SFC<Props> = (props: Props) => {
+export const X01Settings: React.SFC<Props> = (props: Props) => {
   const getHandleSwitchHandler = (type: 'Start' | 'End', key: DartsLeg) => {
     return (e: any) => {
       if (type === 'Start') {
@@ -102,16 +102,9 @@ export const X01SettingsPage: React.SFC<Props> = (props: Props) => {
               className="select-input"
               onChange={handleStartingScoreChange}
             >
-              {Array(10)
-                .fill(1)
-                .map((e, i) => {
-                  const val = (i + 1) * 100 + 1;
-                  return (
-                    <option key={`startingScore${i}`} value={val}>
-                      {val} points
-                    </option>
-                  );
-                })}
+              <option value={301}>301 points</option>
+              <option value={501}>501 points</option>
+              <option value={1001}>1001 points</option>
             </select>
           </StartingScoreContainer>
         </ListItem>

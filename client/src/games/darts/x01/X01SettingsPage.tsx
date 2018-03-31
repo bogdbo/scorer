@@ -9,13 +9,13 @@ import {
   Icon,
   Navigator
 } from 'react-onsenui';
-import { SelectPlayers } from '../../common/SelectPlayers';
-import { X01SettingsPage } from './X01SettingsPage';
-import { User, Service } from '../../service';
-import { X01Settings } from './models';
-import { X01GamePage } from './X01Game';
-import TabbarWrapper from '../../common/TabBarWrapper';
+import { X01GamePage } from './X01GamePage';
 import * as _ from 'lodash';
+import { X01GameSettings } from '../models';
+import { User, Service } from '../../../service';
+import { SelectPlayers } from '../../../common/SelectPlayers';
+import { X01Settings } from './X01Settings';
+import TabbarWrapper from '../../../common/TabBarWrapper';
 
 interface Props {
   navigator: Navigator;
@@ -23,11 +23,11 @@ interface Props {
 
 interface State {
   tabIndex: number;
-  settings: X01Settings;
+  settings: X01GameSettings;
   selectedPlayers: User[];
 }
 
-export class DartsSettingsPage extends React.Component<Props, State> {
+export class X01SettingsPage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -37,7 +37,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     };
   }
 
-  handleSettingsChanged = (settings: X01Settings) => {
+  handleSettingsChanged = (settings: X01GameSettings) => {
     Service.setX01Settings(settings);
     this.setState({ settings });
   };
@@ -58,7 +58,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     },
     {
       content: (
-        <X01SettingsPage
+        <X01Settings
           key="x01Settings"
           settings={this.state.settings}
           onSettingsChanged={this.handleSettingsChanged}
@@ -94,7 +94,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
         <div className="left">
           <BackButton />
         </div>
-        <div className="center">Darts settings</div>
+        <div className="center">X01 game settings</div>
       </Toolbar>
     );
   };

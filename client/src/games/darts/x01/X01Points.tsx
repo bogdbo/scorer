@@ -2,6 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import * as Ons from 'onsenui';
 import { Icon } from 'react-onsenui';
+import { Button } from '../../../common/PointButton';
 
 const Container = styled.div`
   display: grid;
@@ -12,31 +13,11 @@ const Container = styled.div`
   border-collapse: collapse;
 `;
 
-const Button = styled.div`
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
-  flex: 1 1 auto;
-  vertical-align: middle;
-  align-self: center;
-  height: 100%;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  color: #5c5e5f;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-  background-color: ${(props: { odd?: boolean }) =>
-    props.odd ? '#B9C6C9' : '#C6D2D4'};
-
-  :active {
-    background-color: #e97f02;
-  }
-`;
-
 interface MultiplierProps {
   type: string;
   selected?: boolean;
 }
+
 const Multiplier = styled(Button)`
   grid-area: ${(props: MultiplierProps) => props.type};
   color: ${(props: MultiplierProps) =>
@@ -55,8 +36,7 @@ const Tripple = styled(Multiplier)`
 
 const Undo = styled(Button)`
   grid-row: 6;
-  grid-column: 2;
-  grid-column-end: 5;
+  grid-column: 2 / 5;
   background-color: #e6c1b3;
 
   > span {
@@ -66,8 +46,7 @@ const Undo = styled(Button)`
 
 const Miss = styled(Button)`
   grid-row: 6;
-  grid-column: 5;
-  grid-column-end: 6;
+  grid-column: 5 / 6;
   background-color: #c77474;
   flex-flow: column-reverse;
 `;

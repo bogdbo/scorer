@@ -4,15 +4,15 @@ import { Player } from './Player';
 import { X01Points } from './X01Points';
 import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
 import {
-  X01Settings,
   X01Game,
   DartsLeg,
-  TurnDetails,
-  TurnResult
-} from './models';
-import { User, Service } from '../../service';
+  X01TurnDetails,
+  X01TurnResult,
+  X01GameSettings
+} from './../models';
 import * as Ons from 'onsenui';
 import * as _ from 'lodash';
+import { Service, User } from '../../../service';
 
 const Container = styled.div`
   display: grid;
@@ -34,14 +34,14 @@ const BackButtonWrapper = styled.div`
 `;
 
 interface Props {
-  settings: X01Settings;
+  settings: X01GameSettings;
   players: User[];
   navigator: Navigator;
 }
 
 interface State {
   game: X01Game;
-  turn: TurnDetails;
+  turn: X01TurnDetails;
   showModal?: boolean;
 }
 
@@ -79,7 +79,7 @@ export class X01GamePage extends React.Component<Props, State> {
     return {
       username,
       throws: [],
-      valid: TurnResult.Valid
+      result: X01TurnResult.Valid
     };
   };
 
@@ -93,12 +93,25 @@ export class X01GamePage extends React.Component<Props, State> {
     const points = hit * multiplier;
     turn.throws.push(points);
 
+    const updateTurns = (force?: boolean) => {
+      if (force || this.state.turn.throws.length === 3) {
+        const nextPlayer =
+          game.players[
+            (game.players.indexOf(turn.username) + 1) % game.players.length
+          ];
+        game.history.push(turn);
+        return this.newTurn(nextPlayer);
+      } else {
+        return this.state.turn;
+      }
+    };
+
     if (
       !this.gameStarted &&
       !this.isValidMultiplier(this.props.settings.startingLeg, multiplier)
     ) {
-      turn.valid = TurnResult.Bust;
-      this.setState({ game, turn: this.updateTurns(game, turn, true) });
+      turn.result = X01TurnResult.Bust;
+      this.setState({ game, turn: updateTurns(true) });
       return;
     } else {
       this.gameStarted = true;
@@ -119,11 +132,11 @@ export class X01GamePage extends React.Component<Props, State> {
       _.dropRight(turn.throws, 1).forEach(
         t => (game.scores[turn.username] += t)
       );
-      turn.valid = TurnResult.Bust;
-      this.setState({ game, turn: this.updateTurns(game, turn, true) });
+      turn.result = X01TurnResult.Bust;
+      this.setState({ game, turn: updateTurns(true) });
     } else {
       game.scores[turn.username] -= points;
-      this.setState({ game, turn: this.updateTurns(game, turn) });
+      this.setState({ game, turn: updateTurns() });
     }
   };
 
@@ -135,9 +148,9 @@ export class X01GamePage extends React.Component<Props, State> {
     }
 
     if (_.isEmpty(turn.throws)) {
-      const previousTurn = game.history.pop() as TurnDetails;
+      const previousTurn = game.history.pop() as X01TurnDetails;
       const previousThrow = previousTurn.throws.pop() as number;
-      if (previousTurn.valid === TurnResult.Valid) {
+      if (previousTurn.result === X01TurnResult.Valid) {
         game.scores[previousTurn.username] += previousThrow;
       } else {
         // the last turn can only be invalid because of the last throw
@@ -145,25 +158,12 @@ export class X01GamePage extends React.Component<Props, State> {
         previousTurn.throws.forEach(
           t => (game.scores[previousTurn.username] -= t)
         );
-        previousTurn.valid = TurnResult.Valid;
+        previousTurn.result = X01TurnResult.Valid;
       }
       this.setState({ game, turn: previousTurn });
     } else {
       game.scores[turn.username] += turn.throws.pop() as number;
       this.setState({ game, turn });
-    }
-  };
-
-  updateTurns = (game: X01Game, turn: TurnDetails, force?: boolean) => {
-    if (force || this.state.turn.throws.length === 3) {
-      const nextPlayer =
-        game.players[
-          (game.players.indexOf(turn.username) + 1) % game.players.length
-        ];
-      game.history.push(turn);
-      return this.newTurn(nextPlayer);
-    } else {
-      return this.state.turn;
     }
   };
 
