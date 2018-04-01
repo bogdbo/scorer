@@ -142,8 +142,7 @@ class Games extends React.Component<GamesProps, GamesState> {
               this.props.navigator.pushPage({ comp: CricketSettingsPage })
             }
           >
-            {this.state.identitySelected &&
-            (Service.getCurrentIdentity() || '')
+            {(Service.getCurrentIdentity() || '')
               .toLowerCase()
               .includes('antonio')
               ? 'Crocket'

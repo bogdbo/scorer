@@ -56,7 +56,7 @@ export class CricketPoints extends React.Component<Props, State> {
         isBull={isBull}
         onClick={() => this.props.onPoints(value, multiplier)}
       >
-        <span>{multiplier === 1 ? value : 'x ' + multiplier}</span>
+        <span>{multiplier === 1 ? value : '⨯' + multiplier}</span>
       </PointButton>
     );
   }

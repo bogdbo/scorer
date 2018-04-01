@@ -12,6 +12,7 @@ import {
 import { CricketPoints } from './CricketPoints';
 import { CricketPlayers } from './CricketPlayers';
 import * as _ from 'lodash';
+import { Button } from '../../../common/PointButton';
 
 const Header = styled.div`
   grid-row: 1 / 2;
@@ -31,7 +32,7 @@ const BackButtonWrapper = styled.div`
 
 const Container = styled.div`
   display: grid;
-  grid-template-rows: 10% 90%;
+  grid-template-rows: 7% 93%;
   grid-template-columns: repeat(3, 1fr) repeat(2, 1fr);
   height: 100vh;
   max-height: 100vh;
@@ -111,15 +112,7 @@ export class CricketGamePage extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.initGame();
-  }
-
-  componentDidMount() {
-    if (Ons.orientation.isPortrait()) {
-      Ons.notification.toast('Landscape mode is recommended', {
-        timeout: 3000
-      });
-    }
+    this.state = this.initGame();
   }
 
   initGame = () => {
@@ -140,8 +133,12 @@ export class CricketGamePage extends React.Component<Props, State> {
       game.scores[u.username][25] = 0;
     });
 
-    this.state = { game, turn: this.newTurn(this.props.players[0].username) };
+    return { game, turn: this.newTurn(this.props.players[0].username) };
   };
+
+  componentDidMount() {
+    this.initGame();
+  }
 
   newTurn = (username: string) => {
     return {
@@ -359,14 +356,19 @@ export class CricketGamePage extends React.Component<Props, State> {
           <PlayersContainer>
             <CricketPlayers game={this.state.game} turn={this.state.turn} />
           </PlayersContainer>
-          {!this.state.game.endedAt && (
-            <PointsContainer>
+          <PointsContainer>
+            {!this.state.game.endedAt && (
               <CricketPoints
                 onPoints={this.handleThrow}
                 onUndo={this.handleUndo}
               />
-            </PointsContainer>
-          )}
+            )}
+            {this.state.game.endedAt && (
+              <Button onClick={() => this.setState(this.initGame())}>
+                restart
+              </Button>
+            )}
+          </PointsContainer>
         </Container>
       </Page>
     );

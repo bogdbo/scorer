@@ -13,6 +13,7 @@ import {
 import * as Ons from 'onsenui';
 import * as _ from 'lodash';
 import { Service, User } from '../../../service';
+import { Button } from '../../../common/PointButton';
 
 const Container = styled.div`
   display: grid;
@@ -50,7 +51,7 @@ export class X01GamePage extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.initGame();
+    this.state = this.initGame();
   }
 
   initGame = () => {
@@ -69,7 +70,7 @@ export class X01GamePage extends React.Component<Props, State> {
       game.scores[u.username] = this.props.settings.startScore;
     });
 
-    this.state = {
+    return {
       game,
       turn: this.newTurn(this.props.players[0].username)
     };
@@ -269,6 +270,11 @@ export class X01GamePage extends React.Component<Props, State> {
           {this.renderPlayers()}
           {!this.state.game.winner && (
             <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
+          )}
+          {this.state.game.winner && (
+            <Button onClick={() => this.setState(this.initGame())}>
+              Restart
+            </Button>
           )}
         </Container>
       </Page>

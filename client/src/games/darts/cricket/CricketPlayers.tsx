@@ -24,11 +24,14 @@ const PlayerColumn = styled.div`
   grid-row-gap: 2px;
   text-align: center;
   background: #f8fafa;
-  box-shadow: ${(p: PlayerColumnProps) =>
-    p.isActive
-      ? 'inset 0px 0px 100px 3px rgb(175, 214, 103);'
-      : 'inset 0px 0px 100px 3px rgb(185, 198, 201);'};
+  > div:not(:first-child) {
+    opacity: ${(p: PlayerColumnProps) => (p.isActive ? 1 : 0.4)};
+  }
 `;
+
+type PlayerHeaderProps = {
+  isActive: boolean;
+};
 
 const PlayerHeader = styled.div`
   display: flex;
@@ -38,6 +41,9 @@ const PlayerHeader = styled.div`
   white-space: pre;
   text-overflow: ellipsis;
   overflow: hidden;
+  font-weight: ${(p: PlayerHeaderProps) => (p.isActive ? 'bold' : 'normal')};
+  box-shadow: ${(p: PlayerHeaderProps) =>
+    p.isActive ? 'inset 0px 0px 100px 3px rgb(175, 214, 103);' : 'none'};
   > div {
     white-space: pre;
     text-overflow: ellipsis;
@@ -48,6 +54,7 @@ const PlayerHeader = styled.div`
 type ScoreProps = {
   isClosed: boolean;
   canScorePoints: boolean;
+  index: number;
 };
 
 const Score = styled.div`
@@ -55,8 +62,11 @@ const Score = styled.div`
   flex-flow: column;
   align-content: ceter;
   justify-content: space-around;
+  text-shadow: -1px 1px #00000059;
   background: ${(p: ScoreProps) =>
-    p.canScorePoints ? '#88C100' : p.isClosed ? '#EB6841' : 'initial'};
+    p.canScorePoints
+      ? '#88C100'
+      : p.isClosed ? '#EB6841' : p.index % 2 === 0 ? '#B9C6C9' : '#C6D2D4'};
   ons-icon {
     font-size: 1.4rem;
     color: purple;
@@ -85,6 +95,7 @@ export const CricketPlayers: React.SFC<Props> = (props: Props) => {
           return (
             <Score
               key={username + n}
+              index={n}
               isClosed={!open}
               canScorePoints={canScorePoints}
             >
@@ -106,9 +117,9 @@ export const CricketPlayers: React.SFC<Props> = (props: Props) => {
       const isActive = p === (props.game.winner || props.turn.username);
       return (
         <PlayerColumn
+          isActive={isActive}
           key={p + i}
           column={i + 1}
-          isActive={isActive}
           innerRef={(ref: HTMLDivElement) =>
             ref &&
             isActive &&
@@ -119,7 +130,7 @@ export const CricketPlayers: React.SFC<Props> = (props: Props) => {
             })
           }
         >
-          <PlayerHeader key={p + 'username'}>
+          <PlayerHeader key={p + 'username'} isActive={isActive}>
             <div>{p}</div>
             <div>{props.game.scores[p].points}p</div>
           </PlayerHeader>

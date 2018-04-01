@@ -52,7 +52,14 @@ export class CricketSettingsPage extends React.Component<Props, State> {
         <div className="left">
           <BackButton />
         </div>
-        <div className="center">Cricket game settings</div>
+        <div className="center">
+          {(Service.getCurrentIdentity() || '')
+            .toLowerCase()
+            .includes('antonio')
+            ? 'Crocket'
+            : 'Cricket'}{' '}
+          game settings
+        </div>
       </Toolbar>
     );
   };
