@@ -22,7 +22,7 @@ interface State {
 export class SelectPlayers extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { selectedUsers: [] };
+    this.state = { selectedUsers: Service.getSelectedPlayers() };
   }
 
   async componentWillMount() {
@@ -44,6 +44,7 @@ export class SelectPlayers extends React.Component<Props, State> {
         );
       }
       this.setState({ selectedUsers });
+      Service.setSelectedPlayers(selectedUsers);
       // todo: Get current identity User object in a cleaner way
       this.props.onPlayersChanged(
         selectedUsers.concat({
@@ -60,6 +61,9 @@ export class SelectPlayers extends React.Component<Props, State> {
           <input
             type="checkbox"
             id={`checkbox-${user.username}`}
+            checked={this.state.selectedUsers.some(
+              u => u.username === user.username
+            )}
             onChange={this.getUserClickHandler(user)}
           />
         </label>

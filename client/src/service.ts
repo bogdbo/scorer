@@ -11,6 +11,7 @@ export class Service {
   private static API = '/api/v1';
   private static CURRENT_USER = 'CURRENT_USER';
   private static X01SETTINGS = 'X01SETTINGS';
+  private static SELECTED_PLAYERS = 'SELECTED_PLAYERS';
   private static users = [
     { username: 'alex.musat' },
     { username: 'andrei.nechita' },
@@ -84,5 +85,21 @@ export class Service {
       this.X01SETTINGS,
       JSON.stringify(settings)
     );
+  }
+
+  static setSelectedPlayers(players: User[]) {
+    return window.localStorage.setItem(
+      this.SELECTED_PLAYERS,
+      JSON.stringify(players)
+    );
+  }
+
+  static getSelectedPlayers(): User[] {
+    var previousPlayers = window.localStorage.getItem(this.SELECTED_PLAYERS);
+    if (previousPlayers) {
+      return JSON.parse(previousPlayers);
+    }
+
+    return [];
   }
 }
