@@ -1,3 +1,4 @@
+import * as ReactGA from 'react-ga';
 import * as React from 'react';
 import { Service, User } from '../service';
 import { Page, ProgressCircular, List, ListItem } from 'react-onsenui';
@@ -25,7 +26,7 @@ export class SelectPlayers extends React.Component<Props, State> {
     const previouslySelectedUsers = Service.getSelectedPlayers();
     this.state = { selectedUsers: previouslySelectedUsers };
     if (previouslySelectedUsers.length > 0) {
-      this.props.onPlayersChanged(previouslySelectedUsers);
+      this.notifyPlayersChanged(previouslySelectedUsers);
     }
   }
 
@@ -35,6 +36,7 @@ export class SelectPlayers extends React.Component<Props, State> {
       (u: User) => u.username !== Service.getCurrentIdentity()
     );
     this.setState({ users });
+    ReactGA.pageview(window.location.pathname);
   }
 
   getUserClickHandler = (user: User) => {
@@ -50,12 +52,16 @@ export class SelectPlayers extends React.Component<Props, State> {
       this.setState({ selectedUsers });
       Service.setSelectedPlayers(selectedUsers);
       // todo: Get current identity User object in a cleaner way
-      this.props.onPlayersChanged(
-        selectedUsers.concat({
-          username: Service.getCurrentIdentity() as string
-        })
-      );
+      this.notifyPlayersChanged(selectedUsers);
     };
+  };
+
+  notifyPlayersChanged = (selectedUsers: User[]) => {
+    this.props.onPlayersChanged(
+      selectedUsers.concat({
+        username: Service.getCurrentIdentity() as string
+      })
+    );
   };
 
   renderUserPicker = (user: User) => {
