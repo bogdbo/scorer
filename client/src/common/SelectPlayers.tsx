@@ -22,7 +22,11 @@ interface State {
 export class SelectPlayers extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { selectedUsers: Service.getSelectedPlayers() };
+    const previouslySelectedUsers = Service.getSelectedPlayers();
+    this.state = { selectedUsers: previouslySelectedUsers };
+    if (previouslySelectedUsers.length > 0) {
+      this.props.onPlayersChanged(previouslySelectedUsers);
+    }
   }
 
   async componentWillMount() {
