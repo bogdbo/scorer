@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TurnDetails, TurnResult } from './models';
+import { X01TurnDetails, X01TurnResult } from './../models';
 import styled, { keyframes } from 'styled-components';
 import { Card } from 'react-onsenui';
 
@@ -28,6 +28,9 @@ const LastHits = styled.div`
 const PlayerName = styled.div`
   font-size: 1.1rem;
   font-weight: bold;
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Score = styled.div`
@@ -57,7 +60,7 @@ interface Props {
   username: string;
   score: number;
   active: boolean;
-  lastTurn?: TurnDetails;
+  lastTurn?: X01TurnDetails;
 }
 
 export const Player: React.SFC<Props> = (props: Props) => {
@@ -92,7 +95,9 @@ export const Player: React.SFC<Props> = (props: Props) => {
         <PlayerName>{props.username}</PlayerName>
         <Score>{props.score}</Score>
         <LastHits
-          valid={!props.lastTurn || props.lastTurn.valid === TurnResult.Valid}
+          valid={
+            !props.lastTurn || props.lastTurn.result === X01TurnResult.Valid
+          }
         >
           {getHistory()}
         </LastHits>

@@ -1,21 +1,22 @@
+import * as _ from 'lodash';
 import * as React from 'react';
 import {
-  Tab,
-  TabbarRenderTab,
-  Page,
-  Toolbar,
   BackButton,
   Fab,
   Icon,
-  Navigator
+  Navigator,
+  Page,
+  Tab,
+  TabbarRenderTab,
+  Toolbar
 } from 'react-onsenui';
-import { SelectPlayers } from '../../common/SelectPlayers';
-import { X01SettingsPage } from './X01SettingsPage';
-import { User, Service } from '../../service';
-import { X01Settings } from './models';
-import { X01GamePage } from './X01Game';
-import TabbarWrapper from '../../common/TabBarWrapper';
-import * as _ from 'lodash';
+import { RouteComponentProps, withRouter } from 'react-router';
+
+import { SelectPlayers } from '../../../common/SelectPlayers';
+import TabbarWrapper from '../../../common/TabBarWrapper';
+import { Service, User } from '../../../service';
+import { X01GameSettings } from '../models';
+import { X01Settings } from './X01Settings';
 
 interface Props {
   navigator: Navigator;
@@ -23,12 +24,15 @@ interface Props {
 
 interface State {
   tabIndex: number;
-  settings: X01Settings;
+  settings: X01GameSettings;
   selectedPlayers: User[];
 }
 
-export class DartsSettingsPage extends React.Component<Props, State> {
-  constructor(props: Props) {
+export class X01SettingsPageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
     this.state = {
       tabIndex: 0,
@@ -37,7 +41,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     };
   }
 
-  handleSettingsChanged = (settings: X01Settings) => {
+  handleSettingsChanged = (settings: X01GameSettings) => {
     Service.setX01Settings(settings);
     this.setState({ settings });
   };
@@ -58,7 +62,7 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     },
     {
       content: (
-        <X01SettingsPage
+        <X01Settings
           key="x01Settings"
           settings={this.state.settings}
           onSettingsChanged={this.handleSettingsChanged}
@@ -74,12 +78,9 @@ export class DartsSettingsPage extends React.Component<Props, State> {
         disabled={this.state.selectedPlayers.length < 2}
         position="bottom center"
         onClick={() =>
-          this.props.navigator.pushPage({
-            comp: X01GamePage,
-            props: {
-              players: _.shuffle(this.state.selectedPlayers),
-              settings: this.state.settings
-            }
+          this.props.history.push('/x01/play', {
+            players: _.shuffle(this.state.selectedPlayers),
+            settings: this.state.settings
           })
         }
       >
@@ -92,9 +93,9 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     return (
       <Toolbar>
         <div className="left">
-          <BackButton />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </div>
-        <div className="center">Darts settings</div>
+        <div className="center">X01 game settings</div>
       </Toolbar>
     );
   };
@@ -116,3 +117,5 @@ export class DartsSettingsPage extends React.Component<Props, State> {
     );
   }
 }
+
+export const X01SettingsPage = withRouter(X01SettingsPageInternal);

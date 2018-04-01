@@ -1,23 +1,21 @@
+import * as _ from 'lodash';
+import * as Ons from 'onsenui';
 import * as React from 'react';
+import { BackButton, Modal, Page } from 'react-onsenui';
+import { RouteComponentProps, withRouter, Prompt } from 'react-router';
 import styled from 'styled-components';
+
+import { Button } from '../../../common/PointButton';
+import { Service, User } from '../../../service';
+import { DartsLeg, X01Game, X01TurnDetails, X01TurnResult } from './../models';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
-import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
-import {
-  X01Settings,
-  X01Game,
-  DartsLeg,
-  TurnDetails,
-  TurnResult
-} from './models';
-import { User, Service } from '../../service';
-import * as Ons from 'onsenui';
-import * as _ from 'lodash';
 
 const Container = styled.div`
   display: grid;
   height: 100%;
   grid-template-rows: 1fr 4fr;
+  font-family: monospace;
 `;
 
 const Players = styled.div`
@@ -33,24 +31,23 @@ const BackButtonWrapper = styled.div`
   z-index: 10;
 `;
 
-interface Props {
-  settings: X01Settings;
-  players: User[];
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   game: X01Game;
-  turn: TurnDetails;
+  turn: X01TurnDetails;
   showModal?: boolean;
 }
 
-export class X01GamePage extends React.Component<Props, State> {
+export class X01GamePageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
   gameStarted: boolean;
 
-  constructor(props: Props) {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
-    this.initGame();
+    this.state = this.initGame();
   }
 
   initGame = () => {
@@ -64,14 +61,14 @@ export class X01GamePage extends React.Component<Props, State> {
       history: []
     };
 
-    this.props.players.forEach(u => {
+    this.props.location.state.players.forEach((u: User) => {
       game.players.push(u.username);
-      game.scores[u.username] = this.props.settings.startScore;
+      game.scores[u.username] = this.props.location.state.settings.startScore;
     });
 
-    this.state = {
+    return {
       game,
-      turn: this.newTurn(this.props.players[0].username)
+      turn: this.newTurn(this.props.location.state.players[0].username)
     };
   };
 
@@ -79,7 +76,7 @@ export class X01GamePage extends React.Component<Props, State> {
     return {
       username,
       throws: [],
-      valid: TurnResult.Valid
+      result: X01TurnResult.Valid
     };
   };
 
@@ -93,12 +90,28 @@ export class X01GamePage extends React.Component<Props, State> {
     const points = hit * multiplier;
     turn.throws.push(points);
 
+    const updateTurns = (force?: boolean) => {
+      if (force || this.state.turn.throws.length === 3) {
+        const nextPlayer =
+          game.players[
+            (game.players.indexOf(turn.username) + 1) % game.players.length
+          ];
+        game.history.push(turn);
+        return this.newTurn(nextPlayer);
+      } else {
+        return this.state.turn;
+      }
+    };
+
     if (
       !this.gameStarted &&
-      !this.isValidMultiplier(this.props.settings.startingLeg, multiplier)
+      !this.isValidMultiplier(
+        this.props.location.state.settings.startingLeg,
+        multiplier
+      )
     ) {
-      turn.valid = TurnResult.Bust;
-      this.setState({ game, turn: this.updateTurns(game, turn, true) });
+      turn.result = X01TurnResult.Bust;
+      this.setState({ game, turn: updateTurns(true) });
       return;
     } else {
       this.gameStarted = true;
@@ -112,6 +125,7 @@ export class X01GamePage extends React.Component<Props, State> {
     if (isWinner) {
       game.scores[turn.username] -= points;
       game.winner = turn.username; // mark winner
+      game.endedAt = new Date();
       this.setState({ game });
       await this.handleGameEnd();
     } else if (isFail) {
@@ -119,11 +133,11 @@ export class X01GamePage extends React.Component<Props, State> {
       _.dropRight(turn.throws, 1).forEach(
         t => (game.scores[turn.username] += t)
       );
-      turn.valid = TurnResult.Bust;
-      this.setState({ game, turn: this.updateTurns(game, turn, true) });
+      turn.result = X01TurnResult.Bust;
+      this.setState({ game, turn: updateTurns(true) });
     } else {
       game.scores[turn.username] -= points;
-      this.setState({ game, turn: this.updateTurns(game, turn) });
+      this.setState({ game, turn: updateTurns() });
     }
   };
 
@@ -135,9 +149,9 @@ export class X01GamePage extends React.Component<Props, State> {
     }
 
     if (_.isEmpty(turn.throws)) {
-      const previousTurn = game.history.pop() as TurnDetails;
+      const previousTurn = game.history.pop() as X01TurnDetails;
       const previousThrow = previousTurn.throws.pop() as number;
-      if (previousTurn.valid === TurnResult.Valid) {
+      if (previousTurn.result === X01TurnResult.Valid) {
         game.scores[previousTurn.username] += previousThrow;
       } else {
         // the last turn can only be invalid because of the last throw
@@ -145,41 +159,12 @@ export class X01GamePage extends React.Component<Props, State> {
         previousTurn.throws.forEach(
           t => (game.scores[previousTurn.username] -= t)
         );
-        previousTurn.valid = TurnResult.Valid;
+        previousTurn.result = X01TurnResult.Valid;
       }
       this.setState({ game, turn: previousTurn });
     } else {
       game.scores[turn.username] += turn.throws.pop() as number;
       this.setState({ game, turn });
-    }
-  };
-
-  updateTurns = (game: X01Game, turn: TurnDetails, force?: boolean) => {
-    if (force || this.state.turn.throws.length === 3) {
-      const nextPlayer =
-        game.players[
-          (game.players.indexOf(turn.username) + 1) % game.players.length
-        ];
-      game.history.push(turn);
-      return this.newTurn(nextPlayer);
-    } else {
-      return this.state.turn;
-    }
-  };
-
-  handleBackButton = async () => {
-    if (this.state.game.winner) {
-      this.props.navigator.popPage();
-      return;
-    }
-
-    const result: any = await Ons.notification.confirm(
-      'Are you sure you want to end the current game?',
-      { title: 'End game' }
-    );
-
-    if (result === 1) {
-      this.props.navigator.popPage();
     }
   };
 
@@ -193,14 +178,15 @@ export class X01GamePage extends React.Component<Props, State> {
 
   checkEndgame = (score: number, multiplier: 1 | 2 | 3) => {
     const isValidClosingMultiplier = this.isValidMultiplier(
-      this.props.settings.endingLeg,
+      this.props.location.state.settings.endingLeg,
       multiplier
     );
     const isWinner = score === 0 && isValidClosingMultiplier;
     const isFail =
       (score === 0 && !isValidClosingMultiplier) ||
       score < 0 ||
-      (score === 1 && (this.props.settings.endingLeg & DartsLeg.Single) === 0);
+      (score === 1 &&
+        (this.props.location.state.settings.endingLeg & DartsLeg.Single) === 0);
 
     return { isWinner, isFail };
   };
@@ -220,7 +206,7 @@ export class X01GamePage extends React.Component<Props, State> {
         .join(', ');
       var message = {
         text: `@${turn.username} won a *${
-          this.props.settings.startScore
+          this.props.location.state.settings.startScore
         } game* in ${turns.length} turns against ${otherPlayers}`,
         parse: 'full'
       };
@@ -239,7 +225,7 @@ export class X01GamePage extends React.Component<Props, State> {
     return (
       <Players>
         <BackButtonWrapper>
-          <BackButton onClick={this.handleBackButton} />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </BackButtonWrapper>
         {this.state.game.players.map((p, i) => {
           const isActive = this.state.turn.username === p;
@@ -266,11 +252,22 @@ export class X01GamePage extends React.Component<Props, State> {
       <Page renderModal={this.renderModal}>
         <Container>
           {this.renderPlayers()}
-          {!this.state.game.winner && (
+          <Prompt
+            when={this.state.game.endedAt == null}
+            message="Are you sure you want to quit the game?"
+          />
+          {!this.state.game.endedAt && (
             <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
+          )}
+          {this.state.game.endedAt && (
+            <Button onClick={() => this.setState(this.initGame())}>
+              Restart
+            </Button>
           )}
         </Container>
       </Page>
     );
   }
 }
+
+export const X01GamePage = withRouter(X01GamePageInternal);

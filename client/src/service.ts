@@ -1,29 +1,33 @@
-import { X01Settings, DartsLeg } from './games/darts/models';
 import axios from 'axios';
+import * as _ from 'lodash';
+
+import { DartsLeg, X01GameSettings } from './games/darts/models';
 
 export interface User {
   username: string;
 }
 
 export class Service {
-  private static API = 'api/v1';
+  private static API = '/api/v1';
   private static CURRENT_USER = 'CURRENT_USER';
   private static X01SETTINGS = 'X01SETTINGS';
   private static users = [
     { username: 'alex.musat' },
+    { username: 'andrei.nechita' },
     { username: 'bogdan.boiculese' },
     { username: 'adrian.mihu' },
     { username: 'andrei.toma' },
-    { username: 'antonio' },
+    { username: 'antonio.bentia' },
     { username: 'bogdan.cotoarba' },
     { username: 'calin.stan' },
     { username: 'dan.lupusanschi' },
-    { username: 'danut.felix' },
+    { username: 'felix.danut' },
     { username: 'darius.pintilie' },
     { username: 'emil.craciun' },
     { username: 'emilia.serban' },
     { username: 'horea.mihut' },
     { username: 'ionut.lupsan' },
+    { username: 'istvan.vezer' },
     { username: 'mihaela.fedor' },
     { username: 'monica.mosoiu' },
     { username: 'nicu.motoc' },
@@ -42,7 +46,7 @@ export class Service {
   static getUsers() {
     // return axios.get<User[]>(`${this.API}/users`);
     return new Promise<{ data: any }>(resolve => {
-      resolve({ data: this.users });
+      resolve({ data: _.sortBy(this.users, 'username') });
     });
   }
 
@@ -64,7 +68,7 @@ export class Service {
     return window.localStorage.setItem(this.CURRENT_USER, value);
   }
 
-  static getX01Settings(): X01Settings {
+  static getX01Settings(): X01GameSettings {
     const persistedSettings = window.localStorage.getItem(this.X01SETTINGS);
     return persistedSettings
       ? JSON.parse(persistedSettings)
@@ -75,7 +79,7 @@ export class Service {
         };
   }
 
-  static setX01Settings(settings: X01Settings) {
+  static setX01Settings(settings: X01GameSettings) {
     return window.localStorage.setItem(
       this.X01SETTINGS,
       JSON.stringify(settings)
