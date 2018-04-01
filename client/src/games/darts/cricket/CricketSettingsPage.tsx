@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { X01GameSettings } from '../models';
 import { User, Service } from '../../../service';
 import { SelectPlayers } from '../../../common/SelectPlayers';
-import { CricketGamePage } from './CricketGamePage';
+import { RouteComponentProps, withRouter } from 'react-router';
 
 interface Props {
   navigator: Navigator;
@@ -16,8 +16,11 @@ interface State {
   selectedPlayers: User[];
 }
 
-export class CricketSettingsPage extends React.Component<Props, State> {
-  constructor(props: Props) {
+class CricketSettingsPageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
     this.state = {
       tabIndex: 0,
@@ -32,12 +35,9 @@ export class CricketSettingsPage extends React.Component<Props, State> {
         disabled={this.state.selectedPlayers.length < 2}
         position="bottom center"
         onClick={() =>
-          this.props.navigator.pushPage({
-            comp: CricketGamePage,
-            props: {
-              players: _.shuffle(this.state.selectedPlayers),
-              settings: this.state.settings
-            }
+          this.props.history.push('/cricket/play', {
+            players: _.shuffle(this.state.selectedPlayers),
+            settings: this.state.settings
           })
         }
       >
@@ -50,7 +50,7 @@ export class CricketSettingsPage extends React.Component<Props, State> {
     return (
       <Toolbar>
         <div className="left">
-          <BackButton />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </div>
         <div className="center">
           {(Service.getCurrentIdentity() || '')
@@ -80,3 +80,5 @@ export class CricketSettingsPage extends React.Component<Props, State> {
     );
   }
 }
+
+export const CricketSettingsPage = withRouter(CricketSettingsPageInternal);

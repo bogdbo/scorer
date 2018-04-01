@@ -1,12 +1,14 @@
-import { X01GameSettings, DartsLeg } from './games/darts/models';
 import axios from 'axios';
+import * as _ from 'lodash';
+
+import { DartsLeg, X01GameSettings } from './games/darts/models';
 
 export interface User {
   username: string;
 }
 
 export class Service {
-  private static API = 'api/v1';
+  private static API = '/api/v1';
   private static CURRENT_USER = 'CURRENT_USER';
   private static X01SETTINGS = 'X01SETTINGS';
   private static users = [
@@ -19,7 +21,7 @@ export class Service {
     { username: 'bogdan.cotoarba' },
     { username: 'calin.stan' },
     { username: 'dan.lupusanschi' },
-    { username: 'danut.felix' },
+    { username: 'felix.danut' },
     { username: 'darius.pintilie' },
     { username: 'emil.craciun' },
     { username: 'emilia.serban' },
@@ -44,7 +46,7 @@ export class Service {
   static getUsers() {
     // return axios.get<User[]>(`${this.API}/users`);
     return new Promise<{ data: any }>(resolve => {
-      resolve({ data: this.users });
+      resolve({ data: _.sortBy(this.users, 'username') });
     });
   }
 

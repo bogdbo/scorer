@@ -1,21 +1,22 @@
+import * as _ from 'lodash';
 import * as React from 'react';
 import {
-  Tab,
-  TabbarRenderTab,
-  Page,
-  Toolbar,
   BackButton,
   Fab,
   Icon,
-  Navigator
+  Navigator,
+  Page,
+  Tab,
+  TabbarRenderTab,
+  Toolbar
 } from 'react-onsenui';
-import { X01GamePage } from './X01GamePage';
-import * as _ from 'lodash';
-import { X01GameSettings } from '../models';
-import { User, Service } from '../../../service';
+import { RouteComponentProps, withRouter } from 'react-router';
+
 import { SelectPlayers } from '../../../common/SelectPlayers';
-import { X01Settings } from './X01Settings';
 import TabbarWrapper from '../../../common/TabBarWrapper';
+import { Service, User } from '../../../service';
+import { X01GameSettings } from '../models';
+import { X01Settings } from './X01Settings';
 
 interface Props {
   navigator: Navigator;
@@ -27,8 +28,11 @@ interface State {
   selectedPlayers: User[];
 }
 
-export class X01SettingsPage extends React.Component<Props, State> {
-  constructor(props: Props) {
+export class X01SettingsPageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
     this.state = {
       tabIndex: 0,
@@ -74,12 +78,9 @@ export class X01SettingsPage extends React.Component<Props, State> {
         disabled={this.state.selectedPlayers.length < 2}
         position="bottom center"
         onClick={() =>
-          this.props.navigator.pushPage({
-            comp: X01GamePage,
-            props: {
-              players: _.shuffle(this.state.selectedPlayers),
-              settings: this.state.settings
-            }
+          this.props.history.push('/x01/play', {
+            players: _.shuffle(this.state.selectedPlayers),
+            settings: this.state.settings
           })
         }
       >
@@ -92,7 +93,7 @@ export class X01SettingsPage extends React.Component<Props, State> {
     return (
       <Toolbar>
         <div className="left">
-          <BackButton />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </div>
         <div className="center">X01 game settings</div>
       </Toolbar>
@@ -116,3 +117,5 @@ export class X01SettingsPage extends React.Component<Props, State> {
     );
   }
 }
+
+export const X01SettingsPage = withRouter(X01SettingsPageInternal);

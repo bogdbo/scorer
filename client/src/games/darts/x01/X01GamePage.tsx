@@ -1,24 +1,21 @@
+import * as _ from 'lodash';
+import * as Ons from 'onsenui';
 import * as React from 'react';
+import { BackButton, Modal, Page } from 'react-onsenui';
+import { RouteComponentProps, withRouter, Prompt } from 'react-router';
 import styled from 'styled-components';
+
+import { Button } from '../../../common/PointButton';
+import { Service, User } from '../../../service';
+import { DartsLeg, X01Game, X01TurnDetails, X01TurnResult } from './../models';
 import { Player } from './Player';
 import { X01Points } from './X01Points';
-import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
-import {
-  X01Game,
-  DartsLeg,
-  X01TurnDetails,
-  X01TurnResult,
-  X01GameSettings
-} from './../models';
-import * as Ons from 'onsenui';
-import * as _ from 'lodash';
-import { Service, User } from '../../../service';
-import { Button } from '../../../common/PointButton';
 
 const Container = styled.div`
   display: grid;
   height: 100%;
   grid-template-rows: 1fr 4fr;
+  font-family: monospace;
 `;
 
 const Players = styled.div`
@@ -34,11 +31,7 @@ const BackButtonWrapper = styled.div`
   z-index: 10;
 `;
 
-interface Props {
-  settings: X01GameSettings;
-  players: User[];
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   game: X01Game;
@@ -46,10 +39,13 @@ interface State {
   showModal?: boolean;
 }
 
-export class X01GamePage extends React.Component<Props, State> {
+export class X01GamePageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
   gameStarted: boolean;
 
-  constructor(props: Props) {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
     this.state = this.initGame();
   }
@@ -65,14 +61,14 @@ export class X01GamePage extends React.Component<Props, State> {
       history: []
     };
 
-    this.props.players.forEach(u => {
+    this.props.location.state.players.forEach((u: User) => {
       game.players.push(u.username);
-      game.scores[u.username] = this.props.settings.startScore;
+      game.scores[u.username] = this.props.location.state.settings.startScore;
     });
 
     return {
       game,
-      turn: this.newTurn(this.props.players[0].username)
+      turn: this.newTurn(this.props.location.state.players[0].username)
     };
   };
 
@@ -109,7 +105,10 @@ export class X01GamePage extends React.Component<Props, State> {
 
     if (
       !this.gameStarted &&
-      !this.isValidMultiplier(this.props.settings.startingLeg, multiplier)
+      !this.isValidMultiplier(
+        this.props.location.state.settings.startingLeg,
+        multiplier
+      )
     ) {
       turn.result = X01TurnResult.Bust;
       this.setState({ game, turn: updateTurns(true) });
@@ -169,22 +168,6 @@ export class X01GamePage extends React.Component<Props, State> {
     }
   };
 
-  handleBackButton = async () => {
-    if (this.state.game.winner) {
-      this.props.navigator.popPage();
-      return;
-    }
-
-    const result: any = await Ons.notification.confirm(
-      'Are you sure you want to end the current game?',
-      { title: 'End game' }
-    );
-
-    if (result === 1) {
-      this.props.navigator.popPage();
-    }
-  };
-
   renderModal = () => {
     return (
       <Modal isOpen={this.state.showModal}>
@@ -195,14 +178,15 @@ export class X01GamePage extends React.Component<Props, State> {
 
   checkEndgame = (score: number, multiplier: 1 | 2 | 3) => {
     const isValidClosingMultiplier = this.isValidMultiplier(
-      this.props.settings.endingLeg,
+      this.props.location.state.settings.endingLeg,
       multiplier
     );
     const isWinner = score === 0 && isValidClosingMultiplier;
     const isFail =
       (score === 0 && !isValidClosingMultiplier) ||
       score < 0 ||
-      (score === 1 && (this.props.settings.endingLeg & DartsLeg.Single) === 0);
+      (score === 1 &&
+        (this.props.location.state.settings.endingLeg & DartsLeg.Single) === 0);
 
     return { isWinner, isFail };
   };
@@ -222,7 +206,7 @@ export class X01GamePage extends React.Component<Props, State> {
         .join(', ');
       var message = {
         text: `@${turn.username} won a *${
-          this.props.settings.startScore
+          this.props.location.state.settings.startScore
         } game* in ${turns.length} turns against ${otherPlayers}`,
         parse: 'full'
       };
@@ -241,7 +225,7 @@ export class X01GamePage extends React.Component<Props, State> {
     return (
       <Players>
         <BackButtonWrapper>
-          <BackButton onClick={this.handleBackButton} />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </BackButtonWrapper>
         {this.state.game.players.map((p, i) => {
           const isActive = this.state.turn.username === p;
@@ -268,10 +252,14 @@ export class X01GamePage extends React.Component<Props, State> {
       <Page renderModal={this.renderModal}>
         <Container>
           {this.renderPlayers()}
-          {!this.state.game.winner && (
+          <Prompt
+            when={this.state.game.endedAt == null}
+            message="Are you sure you want to quit the game?"
+          />
+          {!this.state.game.endedAt && (
             <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
           )}
-          {this.state.game.winner && (
+          {this.state.game.endedAt && (
             <Button onClick={() => this.setState(this.initGame())}>
               Restart
             </Button>
@@ -281,3 +269,5 @@ export class X01GamePage extends React.Component<Props, State> {
     );
   }
 }
+
+export const X01GamePage = withRouter(X01GamePageInternal);

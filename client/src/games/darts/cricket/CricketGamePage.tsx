@@ -1,18 +1,20 @@
-import * as React from 'react';
+import * as _ from 'lodash';
 import * as Ons from 'onsenui';
+import * as React from 'react';
+import { BackButton, Modal, Page } from 'react-onsenui';
+import { RouteComponentProps, withRouter, Prompt } from 'react-router';
 import styled, { injectGlobal } from 'styled-components';
-import { Page, Navigator, BackButton, Modal } from 'react-onsenui';
-import { User, Service } from '../../../service';
+
+import { Button } from '../../../common/PointButton';
+import { Service, User } from '../../../service';
 import {
   CricketGame,
-  CricketTurnDetails,
   CricketThrowDetails,
-  CricketThrowResult
+  CricketThrowResult,
+  CricketTurnDetails
 } from '../models';
-import { CricketPoints } from './CricketPoints';
 import { CricketPlayers } from './CricketPlayers';
-import * as _ from 'lodash';
-import { Button } from '../../../common/PointButton';
+import { CricketPoints } from './CricketPoints';
 
 const Header = styled.div`
   grid-row: 1 / 2;
@@ -89,10 +91,7 @@ const ThrowValue = styled.span`
   }};
 `;
 
-interface Props {
-  players: User[];
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   game: CricketGame;
@@ -107,10 +106,13 @@ injectGlobal`
   }
 `;
 
-export class CricketGamePage extends React.Component<Props, State> {
+export class CricketGamePageInternal extends React.Component<
+  Props & RouteComponentProps<{}>,
+  State
+> {
   gameStarted: boolean;
 
-  constructor(props: Props) {
+  constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
     this.state = this.initGame();
   }
@@ -124,7 +126,7 @@ export class CricketGamePage extends React.Component<Props, State> {
       history: []
     };
 
-    this.props.players.forEach(u => {
+    this.props.location.state.players.forEach((u: User) => {
       game.players.push(u.username);
       game.scores[u.username] = { points: 0 };
       for (let i = 20; i >= 15; i--) {
@@ -133,7 +135,10 @@ export class CricketGamePage extends React.Component<Props, State> {
       game.scores[u.username][25] = 0;
     });
 
-    return { game, turn: this.newTurn(this.props.players[0].username) };
+    return {
+      game,
+      turn: this.newTurn(this.props.location.state.players[0].username)
+    };
   };
 
   componentDidMount() {
@@ -145,22 +150,6 @@ export class CricketGamePage extends React.Component<Props, State> {
       username,
       throws: []
     };
-  };
-
-  handleBackButton = async () => {
-    if (this.state.game.endedAt) {
-      this.props.navigator.popPage();
-      return;
-    }
-
-    const result: any = await Ons.notification.confirm(
-      'Are you sure you want to end the current game?',
-      { title: 'End game' }
-    );
-
-    if (result === 1) {
-      this.props.navigator.popPage();
-    }
   };
 
   renderThrowDetails = (turn: CricketTurnDetails) => {
@@ -182,7 +171,7 @@ export class CricketGamePage extends React.Component<Props, State> {
     return (
       <>
         <BackButtonWrapper>
-          <BackButton onClick={this.handleBackButton} />
+          <BackButton onClick={() => this.props.history.goBack()} />
         </BackButtonWrapper>
         <ThrowsContainer>
           {Ons.orientation.isLandscape() &&
@@ -201,7 +190,9 @@ export class CricketGamePage extends React.Component<Props, State> {
 
   isOpen = (hit: number) => {
     return _.some(
-      this.props.players.map(p => this.state.game.scores[p.username][hit] < 3)
+      this.props.location.state.players.map(
+        (p: User) => this.state.game.scores[p.username][hit] < 3
+      )
     );
   };
 
@@ -351,6 +342,10 @@ export class CricketGamePage extends React.Component<Props, State> {
   render() {
     return (
       <Page renderModal={this.renderModal}>
+        <Prompt
+          when={this.state.game.endedAt == null}
+          message="Are you sure you want to quit the game?"
+        />
         <Container>
           <Header>{this.renderHeader()}</Header>
           <PlayersContainer>
@@ -374,3 +369,5 @@ export class CricketGamePage extends React.Component<Props, State> {
     );
   }
 }
+
+export const CricketGamePage = withRouter(CricketGamePageInternal);
