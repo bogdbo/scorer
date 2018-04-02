@@ -64,6 +64,8 @@ const ThrowsContainer = styled.div`
   display: flex;
   justify-content: space-around;
   flex: 1;
+  height: 100%;
+  font-size: 3vw;
 `;
 
 const ThrowDetails = styled.div`
@@ -73,10 +75,15 @@ const ThrowDetails = styled.div`
   align-items: center;
 `;
 
+const TurnPoints = styled.span`
+  font-size: 3.5vmax;
+`;
+
 const ThrowValue = styled.span`
   padding-left: 3px;
   padding-right: 3px;
   color: #ffa500;
+  font-size: 3.5vmax;
   background-color: ${(p: { result: CricketThrowResult[] }) => {
     const hasInvalid = p.result.indexOf(CricketThrowResult.Invalid) >= 0;
     const hasHit = p.result.indexOf(CricketThrowResult.Hit) >= 0;
@@ -141,10 +148,6 @@ export class CricketGamePageInternal extends React.Component<
     };
   };
 
-  componentDidMount() {
-    this.initGame();
-  }
-
   newTurn = (username: string) => {
     return {
       username,
@@ -161,7 +164,7 @@ export class CricketGamePageInternal extends React.Component<
             {t.throw}
           </ThrowValue>
         ))}
-        <span>+{points}p</span>
+        <TurnPoints>+{points}p</TurnPoints>
       </>
     );
   };
@@ -196,21 +199,22 @@ export class CricketGamePageInternal extends React.Component<
     );
   };
 
+  updateTurns = () => {
+    const { game, turn } = this.state;
+    if (this.state.turn.throws.length === 3) {
+      const nextPlayer =
+        game.players[
+          (game.players.indexOf(turn.username) + 1) % game.players.length
+        ];
+      game.history.push(turn);
+      return this.newTurn(nextPlayer);
+    } else {
+      return this.state.turn;
+    }
+  };
+
   handleThrow = (hit: number, multiplier: number) => {
     const { game, turn } = this.state;
-
-    const updateTurns = () => {
-      if (this.state.turn.throws.length === 3) {
-        const nextPlayer =
-          game.players[
-            (game.players.indexOf(turn.username) + 1) % game.players.length
-          ];
-        game.history.push(turn);
-        return this.newTurn(nextPlayer);
-      } else {
-        return this.state.turn;
-      }
-    };
 
     const checkEndgame = (): string[] => {
       const hasClosed = (username: string) =>
@@ -275,9 +279,23 @@ export class CricketGamePageInternal extends React.Component<
     }
 
     this.setState(
-      { game, turn: updateTurns() },
+      { game, turn: this.updateTurns() },
       winners.length === 1 ? this.handleGameEnd : _.noop
     );
+  };
+
+  handleNextPlayer = () => {
+    while (this.state.turn.throws.length < 3) {
+      this.state.turn.throws.push({
+        throw: 0,
+        points: 0,
+        hit: 0,
+        multiplier: 1,
+        throwDistribution: [CricketThrowResult.Invalid]
+      });
+    }
+
+    this.setState({ turn: this.updateTurns() });
   };
 
   handleUndo = () => {
@@ -356,6 +374,7 @@ export class CricketGamePageInternal extends React.Component<
               <CricketPoints
                 onPoints={this.handleThrow}
                 onUndo={this.handleUndo}
+                onNextPlayer={this.handleNextPlayer}
               />
             )}
             {this.state.game.endedAt && (

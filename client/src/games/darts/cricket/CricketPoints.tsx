@@ -16,18 +16,24 @@ const Undo = styled(Button)`
   grid-row: 1;
   grid-column: 5 / 7;
   background-color: #e6c1b3;
-  font-size: 1rem;
+  font-size: 2vmax;
 `;
 
 const Miss = styled(Button)`
   grid-row: 1;
   grid-column: 1 / 5;
   background-color: #c77474;
-  font-size: 1rem;
+  font-size: 2vmax;
 `;
 
 const PointButton = styled(Button)`
-  grid-column: span ${(p: { isBull?: boolean }) => (p.isBull ? 3 : 2)};
+  grid-column: span 2;
+`;
+
+const NextPlayerButton = styled(Button)`
+  grid-column: span 2;
+  background-color: #e0c070;
+  font-size: 2vmax;
 `;
 
 interface State {}
@@ -35,6 +41,7 @@ interface State {}
 interface Props {
   onPoints: (hit: number, multiplier: number) => void;
   onUndo: () => void;
+  onNextPlayer: () => void;
 }
 
 export class CricketPoints extends React.Component<Props, State> {
@@ -43,23 +50,28 @@ export class CricketPoints extends React.Component<Props, State> {
     this.state = { multiplier: 1 };
   }
 
-  getButton(
-    text: string | JSX.Element,
-    value: number,
-    multiplier: number,
-    isBull?: boolean
-  ) {
+  getButton(text: string | JSX.Element, value: number, multiplier: number) {
     return (
       <PointButton
         key={value * multiplier}
         odd={value % 2 === 0}
-        isBull={isBull}
         onClick={() => this.props.onPoints(value, multiplier)}
       >
         <span>{multiplier === 1 ? value : '⨯' + multiplier}</span>
       </PointButton>
     );
   }
+
+  getNextPlayerButton = () => {
+    return (
+      <NextPlayerButton
+        key="nextplayer"
+        onClick={() => this.props.onNextPlayer()}
+      >
+        <span>SKIP</span>
+      </NextPlayerButton>
+    );
+  };
 
   renderButtons = () => {
     var elems = [];
@@ -69,8 +81,9 @@ export class CricketPoints extends React.Component<Props, State> {
       }
     }
 
-    elems.push(this.getButton(<Icon icon="bullseye" size={40} />, 25, 1, true));
-    elems.push(this.getButton(<Icon icon="bullseye" size={40} />, 25, 2, true));
+    elems.push(this.getButton(<Icon icon="bullseye" size={40} />, 25, 1));
+    elems.push(this.getButton(<Icon icon="bullseye" size={40} />, 25, 2));
+    elems.push(this.getNextPlayerButton());
     return elems;
   };
 
@@ -79,7 +92,7 @@ export class CricketPoints extends React.Component<Props, State> {
       <Container>
         {this.renderButtons()}
         <Undo onClick={this.props.onUndo}>
-          <span>Undo</span>
+          <span>UNDO</span>
         </Undo>
         <Miss
           onClick={() => {
@@ -87,7 +100,7 @@ export class CricketPoints extends React.Component<Props, State> {
             this.setState({ multiplier: 1 });
           }}
         >
-          <span>Miss</span>
+          <span>MISS</span>
         </Miss>
       </Container>
     );

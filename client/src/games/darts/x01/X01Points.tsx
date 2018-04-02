@@ -9,7 +9,7 @@ const Container = styled.div`
   grid-gap: 5px;
   margin: 5px;
   grid-template-columns: repeat(5, 1fr);
-  grid-template-areas: 'double double tripple tripple tripple';
+  grid-template-areas: 'double double tripple tripple next';
   border-collapse: collapse;
 `;
 
@@ -32,6 +32,11 @@ const Double = styled(Multiplier)`
 const Tripple = styled(Multiplier)`
   background-color: ${(props: MultiplierProps) =>
     props.selected ? '#72AC4A' : '#D8FA86'};
+`;
+
+const NextPlayerButton = styled(Button)`
+  grid-area: next;
+  background-color: #e0c070;
 `;
 
 const Undo = styled(Button)`
@@ -58,6 +63,7 @@ interface State {
 interface Props {
   onPoints: (hit: number, multiplier: number) => void;
   onUndo: () => void;
+  onSkipPlayer: () => void;
 }
 
 export class X01Points extends React.Component<Props, State> {
@@ -124,6 +130,9 @@ export class X01Points extends React.Component<Props, State> {
         >
           Triple
         </Tripple>
+        <NextPlayerButton onClick={() => this.props.onSkipPlayer()}>
+          Skip
+        </NextPlayerButton>
       </>
     );
   }

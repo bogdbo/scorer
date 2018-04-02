@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Button = styled.div`
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 3.5vmax;
   display: flex;
   flex: 1 1 auto;
   vertical-align: middle;

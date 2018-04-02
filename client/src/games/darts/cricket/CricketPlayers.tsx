@@ -25,7 +25,7 @@ const PlayerColumn = styled.div`
   text-align: center;
   background: #f8fafa;
   > div:not(:first-child) {
-    opacity: ${(p: PlayerColumnProps) => (p.isActive ? 1 : 0.4)};
+    opacity: ${(p: PlayerColumnProps) => (p.isActive ? 1 : 0.8)};
   }
 `;
 
@@ -41,7 +41,7 @@ const PlayerHeader = styled.div`
   white-space: pre;
   text-overflow: ellipsis;
   overflow: hidden;
-  font-weight: ${(p: PlayerHeaderProps) => (p.isActive ? 'bold' : 'normal')};
+  font-size: 2.7vmax;
   box-shadow: ${(p: PlayerHeaderProps) =>
     p.isActive ? 'inset 0px 0px 100px 3px rgb(175, 214, 103);' : 'none'};
   > div {
@@ -68,7 +68,7 @@ const Score = styled.div`
       ? '#88C100'
       : p.isClosed ? '#EB6841' : p.index % 2 === 0 ? '#B9C6C9' : '#C6D2D4'};
   ons-icon {
-    font-size: 1.4rem;
+    font-size: 5vmax;
     color: purple;
   }
 `;

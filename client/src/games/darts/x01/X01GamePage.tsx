@@ -29,6 +29,7 @@ const BackButtonWrapper = styled.div`
   position: fixed;
   background: #ececec;
   z-index: 10;
+  top: 9%;
 `;
 
 interface Props {}
@@ -85,23 +86,24 @@ export class X01GamePageInternal extends React.Component<
     return (leg & legType) === legType;
   };
 
+  updateTurns = (force?: boolean) => {
+    const { game, turn } = this.state;
+    if (force || this.state.turn.throws.length === 3) {
+      const nextPlayer =
+        game.players[
+          (game.players.indexOf(turn.username) + 1) % game.players.length
+        ];
+      game.history.push(turn);
+      return this.newTurn(nextPlayer);
+    } else {
+      return this.state.turn;
+    }
+  };
+
   handleThrow = async (hit: number, multiplier: 1 | 2 | 3) => {
     const { game, turn } = this.state;
     const points = hit * multiplier;
     turn.throws.push(points);
-
-    const updateTurns = (force?: boolean) => {
-      if (force || this.state.turn.throws.length === 3) {
-        const nextPlayer =
-          game.players[
-            (game.players.indexOf(turn.username) + 1) % game.players.length
-          ];
-        game.history.push(turn);
-        return this.newTurn(nextPlayer);
-      } else {
-        return this.state.turn;
-      }
-    };
 
     if (
       !this.gameStarted &&
@@ -111,7 +113,7 @@ export class X01GamePageInternal extends React.Component<
       )
     ) {
       turn.result = X01TurnResult.Bust;
-      this.setState({ game, turn: updateTurns(true) });
+      this.setState({ game, turn: this.updateTurns(true) });
       return;
     } else {
       this.gameStarted = true;
@@ -134,11 +136,17 @@ export class X01GamePageInternal extends React.Component<
         t => (game.scores[turn.username] += t)
       );
       turn.result = X01TurnResult.Bust;
-      this.setState({ game, turn: updateTurns(true) });
+      this.setState({ game, turn: this.updateTurns(true) });
     } else {
       game.scores[turn.username] -= points;
-      this.setState({ game, turn: updateTurns() });
+      this.setState({ game, turn: this.updateTurns() });
     }
+  };
+
+  handleSkipPlayer = () => {
+    const { turn } = this.state;
+    turn.throws = turn.throws.concat(Array(3 - turn.throws.length).fill(0));
+    this.setState({ turn: this.updateTurns() });
   };
 
   handleUndo = () => {
@@ -257,7 +265,11 @@ export class X01GamePageInternal extends React.Component<
             message="Are you sure you want to quit the game?"
           />
           {!this.state.game.endedAt && (
-            <X01Points onPoints={this.handleThrow} onUndo={this.handleUndo} />
+            <X01Points
+              onPoints={this.handleThrow}
+              onUndo={this.handleUndo}
+              onSkipPlayer={this.handleSkipPlayer}
+            />
           )}
           {this.state.game.endedAt && (
             <Button onClick={() => this.setState(this.initGame())}>

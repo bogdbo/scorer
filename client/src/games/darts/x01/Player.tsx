@@ -35,7 +35,6 @@ const PlayerName = styled.div`
 
 const Score = styled.div`
   font-size: 3rem;
-  padding: 5px;
   font-weight: bold;
   text-align: center;
   font-family: monospace;
