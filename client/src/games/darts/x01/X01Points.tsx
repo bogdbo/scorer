@@ -113,7 +113,6 @@ export class X01Points extends React.Component<Props, State> {
           type="double"
           selected={this.state.multiplier === 2}
           onClick={() => {
-            window.navigator.vibrate(50);
             this.setState({ multiplier: this.state.multiplier === 2 ? 1 : 2 });
           }}
         >
@@ -124,7 +123,6 @@ export class X01Points extends React.Component<Props, State> {
           type="tripple"
           selected={this.state.multiplier === 3}
           onClick={() => {
-            window.navigator.vibrate(50);
             this.setState({ multiplier: this.state.multiplier === 3 ? 1 : 3 });
           }}
         >
