@@ -1,11 +1,12 @@
-import axios from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import * as _ from 'lodash';
 
 import {
   DartsLeg,
   X01GameSettings,
   X01Game,
-  CricketGame
+  CricketGame,
+  StatCollection
 } from './games/darts/models';
 
 export interface User {
@@ -111,7 +112,7 @@ export class Service {
     return [];
   }
 
-  static getAllStats(): any {
-    return axios.get<any>(`${this.API}/stats`);
+  static getAllStats(): AxiosPromise<StatCollection[]> {
+    return axios.get<StatCollection[]>(`${this.API}/stats`);
   }
 }

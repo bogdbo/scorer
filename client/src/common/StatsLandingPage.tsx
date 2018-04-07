@@ -4,11 +4,25 @@ import { Page, Toolbar, BackButton } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Service } from '../service';
 import { Progress } from './Progress';
+import styled from 'styled-components';
+import { StatCollection } from '../games/darts/models';
 
 interface Props {}
 interface State {
-  stats?: any;
+  stats?: StatCollection[];
 }
+
+const StatsList = styled.ol`
+  > li {
+    &:nth-child(even) {
+      background-color: #ececec;
+    }
+
+    > span:last-child {
+      float: right;
+    }
+  }
+`;
 
 export class StatsLandingPageInternal extends React.Component<
   Props & RouteComponentProps<{}>,
@@ -41,55 +55,33 @@ export class StatsLandingPageInternal extends React.Component<
 
   renderStatsCard = (title: string, content: JSX.Element) => {
     return (
-      <div className="card">
+      <div className="card" key={title}>
         <h2 className="card__title">{title}</h2>
         <div className="card__content">{content}</div>
       </div>
     );
   };
 
-  renderX01Stats = () => {
-    const list = (
-      <div>
-        {this.state.stats.X01Averages.map((a: any, i: number) => (
-          <div key={a._id}>
-            {i + 1}. {a._id} - {a.average.toFixed(2)}
-          </div>
+  renderStats = (statCollection: StatCollection) => {
+    const statList = (
+      <StatsList>
+        {statCollection.values.map((a: any) => (
+          <li key={statCollection.title + a._id}>
+            <span>{a._id}</span>
+            <span>{isNaN(a.value) ? a.value : a.value.toFixed(2)}</span>
+          </li>
         ))}
-      </div>
+      </StatsList>
     );
 
-    return this.renderStatsCard('X01 Average Hit', list);
-  };
-
-  renderCricketStats = () => {
-    const list = (
-      <div>
-        {this.state.stats.CricketWins.map((a: any, i: number) => (
-          <div key={a._id}>
-            {i + 1}. {a._id} - {a.wins}
-          </div>
-        ))}
-      </div>
-    );
-
-    return this.renderStatsCard('Cricket wins', list);
-  };
-
-  renderStats = () => {
-    return (
-      <>
-        {this.renderX01Stats()}
-        {this.renderCricketStats()}
-      </>
-    );
+    return this.renderStatsCard(statCollection.title, statList);
   };
 
   render() {
     return (
       <Page renderToolbar={this.renderToolbar}>
         {!this.state.stats && <Progress />}
-        {this.state.stats && this.renderStats()}
+        {this.state.stats && this.state.stats.map(this.renderStats)}
       </Page>
     );
   }

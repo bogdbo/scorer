@@ -60,3 +60,13 @@ export interface CricketGame {
   scores: { [key: string]: { points: number; [key: number]: number } };
   history: CricketTurnDetails[];
 }
+
+export type StatCollection = {
+  title: string;
+  values: Stat[];
+};
+
+export type Stat = {
+  _id: string;
+  value: number;
+};
