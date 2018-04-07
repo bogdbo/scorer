@@ -98,20 +98,25 @@ const ThrowValue = styled.span`
   }};
 `;
 
-interface Props {}
-
-interface State {
-  game: CricketGame;
-  turn: CricketTurnDetails;
-  showModal?: boolean;
-}
-
 // tslint:disable-next-line:no-unused-expression
 injectGlobal`
   * {
     box-sizing: border-box;
   }
 `;
+
+type LocationState = {
+  players: User[];
+};
+
+interface Props {}
+
+interface State {
+  game: CricketGame;
+  turn: CricketTurnDetails;
+  showModal?: boolean;
+  modalMessage?: string;
+}
 
 export class CricketGamePageInternal extends React.Component<
   Props & RouteComponentProps<{}>,
@@ -121,19 +126,19 @@ export class CricketGamePageInternal extends React.Component<
 
   constructor(props: Props & RouteComponentProps<{}>) {
     super(props);
-    this.state = this.initGame();
+    this.state = this.newGameState();
   }
 
-  initGame = () => {
+  newGameState = () => {
+    const { players }: LocationState = this.props.location.state;
     const game: CricketGame = {
-      _id: 'todo',
       createdAt: new Date(),
       scores: {},
       players: [],
       history: []
     };
 
-    this.props.location.state.players.forEach((u: User) => {
+    players.forEach((u: User) => {
       game.players.push(u.username);
       game.scores[u.username] = { points: 0 };
       for (let i = 20; i >= 15; i--) {
@@ -144,11 +149,11 @@ export class CricketGamePageInternal extends React.Component<
 
     return {
       game,
-      turn: this.newTurn(this.props.location.state.players[0].username)
+      turn: this.getNewTurn(players[0].username)
     };
   };
 
-  newTurn = (username: string) => {
+  getNewTurn = (username: string) => {
     return {
       username,
       throws: []
@@ -207,13 +212,13 @@ export class CricketGamePageInternal extends React.Component<
           (game.players.indexOf(turn.username) + 1) % game.players.length
         ];
       game.history.push(turn);
-      return this.newTurn(nextPlayer);
+      return this.getNewTurn(nextPlayer);
     } else {
       return this.state.turn;
     }
   };
 
-  handleThrow = (hit: number, multiplier: number) => {
+  handleThrow = (value: number, multiplier: number) => {
     const { game, turn } = this.state;
 
     const checkEndgame = (): string[] => {
@@ -231,24 +236,28 @@ export class CricketGamePageInternal extends React.Component<
       return allClosed
         ? maxScorePlayers // all closed, nothing to play, either a tie either a win
         : currentUserHasClosed && maxScorePlayers.length === 1
-          ? maxScorePlayers // currentUserClosed && has max points => winner
+          ? [turn.username] // currentUserClosed && has max points => winner
           : []; // game is still open
     };
 
     const throwDistribution = [];
-    let points = 0;
-    if (hit === 0) {
+    // count points obtained for this throw
+    // eg: 20 is already hit twice, current throw value is 20 and multiplier is 3
+    // => 1 of those 20s closes the number and the other 2 are extra points
+    // if it's still not closed by another player
+    let currentThrowExtraPoints = 0;
+    if (value === 0) {
       throwDistribution.push(CricketThrowResult.Invalid);
     } else {
       let tempMultiplier = multiplier;
       do {
-        if (game.scores[turn.username][hit] < 3) {
-          game.scores[turn.username][hit]++;
+        if (game.scores[turn.username][value] < 3) {
+          game.scores[turn.username][value]++;
           throwDistribution.push(CricketThrowResult.Hit);
         } else {
-          if (this.isOpen(hit)) {
-            game.scores[turn.username].points += hit;
-            points += hit;
+          if (this.isOpen(value)) {
+            game.scores[turn.username].points += value;
+            currentThrowExtraPoints += value;
             throwDistribution.push(CricketThrowResult.Points);
           } else {
             throwDistribution.push(CricketThrowResult.Invalid);
@@ -257,14 +266,13 @@ export class CricketGamePageInternal extends React.Component<
       } while (--tempMultiplier > 0);
     }
 
-    var currentThrow: CricketThrowDetails = {
-      throw: hit * multiplier,
-      points,
-      hit,
+    turn.throws.push({
+      throw: value * multiplier,
+      points: currentThrowExtraPoints,
+      value,
       multiplier,
       throwDistribution
-    };
-    turn.throws.push(currentThrow);
+    });
 
     var winners = checkEndgame();
     if (winners.length === 1) {
@@ -274,7 +282,7 @@ export class CricketGamePageInternal extends React.Component<
       game.endedAt = new Date();
       // todo: slack!
       Ons.notification.toast(`Tie between ${winners.join(', ')}`, {
-        timeout: 1500
+        timeout: 5000
       });
     }
 
@@ -289,7 +297,7 @@ export class CricketGamePageInternal extends React.Component<
       this.state.turn.throws.push({
         throw: 0,
         points: 0,
-        hit: 0,
+        value: 0,
         multiplier: 1,
         throwDistribution: [CricketThrowResult.Invalid]
       });
@@ -310,18 +318,40 @@ export class CricketGamePageInternal extends React.Component<
     }
 
     const previousThrow = turn.throws.pop() as CricketThrowDetails;
-    game.scores[turn.username].points -= previousThrow.points;
+    game.scores[turn.username].points -= previousThrow.points; // undo extra points
     game.scores[turn.username][
-      previousThrow.hit
+      previousThrow.value
     ] -= previousThrow.throwDistribution.filter(
       d => d === CricketThrowResult.Hit
-    ).length;
+    ).length; // undo hits, if there were any
 
     this.setState({ game, turn: turn });
   };
 
+  trySaveGame = async (game: CricketGame) => {
+    this.setState({ showModal: true, modalMessage: 'Saving game' });
+    let retry: any = 1;
+    while (retry === 1) {
+      try {
+        await Service.uploadCricket(game);
+        retry = 0;
+      } catch (ex) {
+        retry = await Ons.notification.confirm(
+          `Error saving game: '${JSON.stringify(
+            ex.response.data
+          )}'. Do you want to retry?`
+        );
+      }
+    }
+
+    this.setState({ showModal: false });
+  };
+
   handleGameEnd = async () => {
     const { game } = this.state;
+
+    await this.trySaveGame(game);
+
     const winner: string = game.winner as string;
     var result: any = await Ons.notification.confirm(
       `Congratulations ${winner}! Post result to slack?`
@@ -338,7 +368,7 @@ export class CricketGamePageInternal extends React.Component<
         }p)_ won a *game of cricket* in ${turns} turns against ${otherPlayers}`,
         parse: 'full'
       };
-      this.setState({ showModal: true });
+      this.setState({ showModal: true, modalMessage: 'Please wait' });
       try {
         await Service.notify(message);
         Ons.notification.toast('Posted to slack', { timeout: 1500 });
@@ -352,7 +382,7 @@ export class CricketGamePageInternal extends React.Component<
   renderModal = () => {
     return (
       <Modal isOpen={this.state.showModal}>
-        <p>Please wait...</p>
+        <p>{this.state.modalMessage || 'Please wait...'}</p>
       </Modal>
     );
   };
@@ -378,7 +408,7 @@ export class CricketGamePageInternal extends React.Component<
               />
             )}
             {this.state.game.endedAt && (
-              <Button onClick={() => this.setState(this.initGame())}>
+              <Button onClick={() => this.setState(this.newGameState())}>
                 restart
               </Button>
             )}

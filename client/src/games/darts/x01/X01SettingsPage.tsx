@@ -4,7 +4,6 @@ import {
   BackButton,
   Fab,
   Icon,
-  Navigator,
   Page,
   Tab,
   TabbarRenderTab,
@@ -18,9 +17,7 @@ import { Service, User } from '../../../service';
 import { X01GameSettings } from '../models';
 import { X01Settings } from './X01Settings';
 
-interface Props {
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   tabIndex: number;

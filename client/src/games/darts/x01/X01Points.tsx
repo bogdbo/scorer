@@ -13,10 +13,10 @@ const Container = styled.div`
   border-collapse: collapse;
 `;
 
-interface MultiplierProps {
+type MultiplierProps = {
   type: string;
   selected?: boolean;
-}
+};
 
 const Multiplier = styled(Button)`
   grid-area: ${(props: MultiplierProps) => props.type};
@@ -128,7 +128,12 @@ export class X01Points extends React.Component<Props, State> {
         >
           Triple
         </Tripple>
-        <NextPlayerButton onClick={() => this.props.onSkipPlayer()}>
+        <NextPlayerButton
+          onClick={() => {
+            this.props.onSkipPlayer();
+            this.setState({ multiplier: 1 });
+          }}
+        >
           Skip
         </NextPlayerButton>
       </>
