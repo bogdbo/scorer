@@ -28,7 +28,7 @@ export class StatsController {
 
       res.json({
         X01Averages: await StatsController.getX01Averages(X01Collection),
-        CricketWins: await StatsController.getCricketWins(X01Collection)
+        CricketWins: await StatsController.getCricketWins(CricketCollection)
       });
 
       client.close();
