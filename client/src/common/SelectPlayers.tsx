@@ -1,16 +1,7 @@
-import * as ReactGA from 'react-ga';
 import * as React from 'react';
+import { List, ListItem, Page } from 'react-onsenui';
 import { Service, User } from '../service';
-import { Page, ProgressCircular, List, ListItem } from 'react-onsenui';
-import styled from 'styled-components';
-
-const ProgressContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-`;
+import { Progress } from './Progress';
 
 interface Props {
   onPlayersChanged: (selectedUsers: User[]) => void;
@@ -23,6 +14,7 @@ interface State {
 export class SelectPlayers extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
+
     const previouslySelectedUsers = Service.getSelectedPlayers();
     this.state = { selectedUsers: previouslySelectedUsers };
     if (previouslySelectedUsers.length > 0) {
@@ -36,7 +28,6 @@ export class SelectPlayers extends React.Component<Props, State> {
       (u: User) => u.username !== Service.getCurrentIdentity()
     );
     this.setState({ users });
-    ReactGA.pageview(window.location.pathname);
   }
 
   getUserClickHandler = (user: User) => {
@@ -50,8 +41,7 @@ export class SelectPlayers extends React.Component<Props, State> {
         );
       }
       this.setState({ selectedUsers });
-      Service.setSelectedPlayers(selectedUsers);
-      // todo: Get current identity User object in a cleaner way
+      Service.setSelectedPlayers(selectedUsers); // remember selected players
       this.notifyPlayersChanged(selectedUsers);
     };
   };
@@ -64,7 +54,7 @@ export class SelectPlayers extends React.Component<Props, State> {
     );
   };
 
-  renderUserPicker = (user: User) => {
+  renderUserRow = (user: User) => {
     return (
       <ListItem key={user.username} tappable={true}>
         <label className="left">
@@ -84,20 +74,34 @@ export class SelectPlayers extends React.Component<Props, State> {
     );
   };
 
+  renderCurrentlySelectedUsers() {
+    return (
+      this.state.selectedUsers.length > 0 && (
+        <>
+          <label className="list-header">Currently selected users</label>
+          <List
+            dataSource={this.state.selectedUsers}
+            renderRow={this.renderUserRow}
+          />{' '}
+        </>
+      )
+    );
+  }
+
   render() {
     if (!this.state.users) {
       return (
         <Page>
-          <ProgressContainer>
-            <ProgressCircular indeterminate={true} />
-          </ProgressContainer>
+          <Progress />
         </Page>
       );
     }
 
     return (
       <Page>
-        <List dataSource={this.state.users} renderRow={this.renderUserPicker} />
+        {this.renderCurrentlySelectedUsers()}
+        <label className="list-header">Select users</label>
+        <List dataSource={this.state.users} renderRow={this.renderUserRow} />
       </Page>
     );
   }

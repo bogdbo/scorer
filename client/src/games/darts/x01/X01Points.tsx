@@ -13,10 +13,10 @@ const Container = styled.div`
   border-collapse: collapse;
 `;
 
-interface MultiplierProps {
+type MultiplierProps = {
   type: string;
   selected?: boolean;
-}
+};
 
 const Multiplier = styled(Button)`
   grid-area: ${(props: MultiplierProps) => props.type};
@@ -35,23 +35,22 @@ const Tripple = styled(Multiplier)`
 `;
 
 const NextPlayerButton = styled(Button)`
-  grid-area: next;
+  grid-row: 6;
+  grid-column: 2 / 5;
   background-color: #e0c070;
+  > ons-icon {
+    padding-right: 5px;
+  }
 `;
 
 const Undo = styled(Button)`
   grid-row: 6;
-  grid-column: 2 / 5;
+  grid-column: 5 / 6;
   background-color: #e6c1b3;
-
-  > span {
-    padding-left: 5px;
-  }
 `;
 
 const Miss = styled(Button)`
-  grid-row: 6;
-  grid-column: 5 / 6;
+  grid-area: next;
   background-color: #c77474;
   flex-flow: column-reverse;
 `;
@@ -128,22 +127,6 @@ export class X01Points extends React.Component<Props, State> {
         >
           Triple
         </Tripple>
-        <NextPlayerButton onClick={() => this.props.onSkipPlayer()}>
-          Skip
-        </NextPlayerButton>
-      </>
-    );
-  }
-
-  render() {
-    return (
-      <Container>
-        {this.renderMultipliers()}
-        {this.renderButtons()}
-        <Undo onClick={this.props.onUndo}>
-          <Icon icon="undo" />
-          <span>Undo</span>
-        </Undo>
         <Miss
           onClick={() => {
             this.props.onPoints(0, 1);
@@ -153,6 +136,27 @@ export class X01Points extends React.Component<Props, State> {
           <Icon icon="md-arrow-missed" />
           <span>Miss</span>
         </Miss>
+      </>
+    );
+  }
+
+  render() {
+    return (
+      <Container>
+        {this.renderMultipliers()}
+        {this.renderButtons()}
+        <NextPlayerButton
+          onClick={() => {
+            this.props.onSkipPlayer();
+            this.setState({ multiplier: 1 });
+          }}
+        >
+          <Icon icon="angle-double-right" />
+          Skip
+        </NextPlayerButton>
+        <Undo onClick={this.props.onUndo}>
+          <span>Undo</span>
+        </Undo>
       </Container>
     );
   }

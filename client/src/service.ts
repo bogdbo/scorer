@@ -1,7 +1,12 @@
 import axios from 'axios';
 import * as _ from 'lodash';
 
-import { DartsLeg, X01GameSettings } from './games/darts/models';
+import {
+  DartsLeg,
+  X01GameSettings,
+  X01Game,
+  CricketGame
+} from './games/darts/models';
 
 export interface User {
   username: string;
@@ -51,9 +56,12 @@ export class Service {
     });
   }
 
-  static newGame() {
-    // return axios.put<Darts>(`${this.API}/darts`);
-    return new Promise<{ data: any }>(r => r({ data: { players: {} } }));
+  static uploadX01Game(game: X01Game) {
+    return axios.post<any>(`${this.API}/darts/x01`, game);
+  }
+
+  static uploadCricket(game: CricketGame) {
+    return axios.post<any>(`${this.API}/darts/cricket`, game);
   }
 
   // TODO: Accept game object
@@ -101,5 +109,9 @@ export class Service {
     }
 
     return [];
+  }
+
+  static getAllStats(): any {
+    return axios.get<any>(`${this.API}/stats`);
   }
 }

@@ -1,12 +1,5 @@
 import * as React from 'react';
-import {
-  BottomToolbar,
-  Button,
-  Navigator,
-  Page,
-  ProgressCircular,
-  Toolbar
-} from 'react-onsenui';
+import { Button, Page, ProgressCircular, Toolbar } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import styled from 'styled-components';
 
@@ -38,14 +31,7 @@ const IdentityContainer = styled.div`
   }
 `;
 
-const VersionContainer = styled.div`
-  float: right;
-  padding: 15px;
-`;
-
-interface Props {
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   users?: any;
@@ -109,21 +95,9 @@ class LandingPageInternal extends React.Component<
     }
   };
 
-  renderVersionToolbar = () => {
-    return (
-      <BottomToolbar>
-        <VersionContainer>
-          <span>Alpha version</span>
-        </VersionContainer>
-      </BottomToolbar>
-    );
-  };
   render() {
     return (
-      <Page
-        renderToolbar={this.renderToolbar}
-        renderBottomToolbar={this.renderVersionToolbar}
-      >
+      <Page renderToolbar={this.renderToolbar}>
         <IdentityContainer>{this.renderCurrentIdentity()}</IdentityContainer>
         <Container>
           <GameButton
@@ -142,7 +116,9 @@ class LandingPageInternal extends React.Component<
               ? 'Crocket'
               : 'Cricket'}
           </GameButton>
-          <GameButton disabled={true}>Stats</GameButton>
+          <GameButton onClick={() => this.props.history.push('/stats')}>
+            Stats
+          </GameButton>
         </Container>
       </Page>
     );

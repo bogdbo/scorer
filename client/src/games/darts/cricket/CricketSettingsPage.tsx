@@ -1,14 +1,12 @@
 import * as React from 'react';
-import { Page, Toolbar, BackButton, Fab, Icon, Navigator } from 'react-onsenui';
+import { Page, Toolbar, BackButton, Fab, Icon } from 'react-onsenui';
 import * as _ from 'lodash';
 import { X01GameSettings } from '../models';
 import { User, Service } from '../../../service';
 import { SelectPlayers } from '../../../common/SelectPlayers';
 import { RouteComponentProps, withRouter } from 'react-router';
 
-interface Props {
-  navigator: Navigator;
-}
+interface Props {}
 
 interface State {
   tabIndex: number;

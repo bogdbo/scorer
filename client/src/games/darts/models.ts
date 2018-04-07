@@ -11,13 +11,14 @@ export interface X01GameSettings {
 }
 
 export interface X01Game {
-  _id: String;
+  _id?: String;
+  startScore: number;
   createdAt: Date;
-  endedAt?: Date;
-  winner?: string;
   players: string[];
   scores: { [key: string]: number };
   history: X01TurnDetails[];
+  endedAt?: Date;
+  winner?: string;
 }
 
 export enum X01TurnResult {
@@ -39,7 +40,7 @@ export enum CricketThrowResult {
 
 export interface CricketThrowDetails {
   throw: number;
-  hit: number;
+  value: number;
   multiplier: number;
   points: number;
   throwDistribution: CricketThrowResult[];
@@ -51,7 +52,7 @@ export interface CricketTurnDetails {
 }
 
 export interface CricketGame {
-  _id: String;
+  _id?: String;
   createdAt: Date;
   endedAt?: Date;
   winner?: string;

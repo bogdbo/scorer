@@ -14,6 +14,7 @@ import { CricketSettingsPage } from './games/darts/cricket/CricketSettingsPage';
 import { X01GamePageInternal } from './games/darts/x01/X01GamePage';
 import { X01SettingsPageInternal } from './games/darts/x01/X01SettingsPage';
 import withTracker from './common/withTracker';
+import { StatsLandingPageInternal } from './common/StatsLandingPage';
 
 export default class App extends React.Component {
   componentDidMount() {
@@ -44,6 +45,10 @@ export default class App extends React.Component {
             component={withTracker(CricketGamePageInternal)}
           />
           <Redirect from="/cricket" to="/cricket/settings" />
+          <Route
+            path="/stats"
+            component={withTracker(StatsLandingPageInternal)}
+          />
           <Route path="/" component={withTracker(LandingPage)} />
         </Switch>
       </BrowserRouter>
