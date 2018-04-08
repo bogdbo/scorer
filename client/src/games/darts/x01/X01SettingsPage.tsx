@@ -94,7 +94,7 @@ export class X01SettingsPageInternal extends React.Component<
         </div>
         <div className="center">
           <Icon icon="bullseye" />
-          &nbsp;X01 game settings
+          &nbsp;X01 settings
         </div>
       </Toolbar>
     );

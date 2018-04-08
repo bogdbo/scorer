@@ -75,3 +75,7 @@ export type About = {
   version: string;
   from: string;
 };
+
+export type MedalsType = {
+  [key: string]: { [key: number]: number };
+};

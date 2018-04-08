@@ -1,14 +1,14 @@
 import axios, { AxiosPromise } from 'axios';
 import * as _ from 'lodash';
-
 import {
-  DartsLeg,
-  X01GameSettings,
-  X01Game,
+  About,
   CricketGame,
-  StatCollection,
-  About
+  DartsLeg,
+  X01Game,
+  X01GameSettings,
+  MedalsType
 } from './games/darts/models';
+import { StatCollection } from '../../src/StatsController';
 
 export interface User {
   username: string;
@@ -113,8 +113,28 @@ export class Service {
     return [];
   }
 
-  static getAllStats(): AxiosPromise<StatCollection[]> {
-    return axios.get<StatCollection[]>(`${this.API}/stats`);
+  static getAllStats(
+    ignoreCache: boolean = false
+  ): AxiosPromise<StatCollection[]> {
+    return axios.get<StatCollection[]>(
+      `${this.API}/stats`,
+      ignoreCache
+        ? {
+            headers: { 'Cache-Control': 'no-cache' }
+          }
+        : undefined
+    );
+  }
+
+  static getAllMedals(ignoreCache: boolean = false): AxiosPromise<MedalsType> {
+    return axios.get<MedalsType>(
+      `${this.API}/stats/all/medals`,
+      ignoreCache
+        ? {
+            headers: { 'Cache-Control': 'no-cache' }
+          }
+        : undefined
+    );
   }
 
   static getAboutInfo(): AxiosPromise<About> {

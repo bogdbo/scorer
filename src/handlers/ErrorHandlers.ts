@@ -1,9 +1,4 @@
-import {
-  ErrorRequestHandler,
-  RequestHandler,
-  RequestHandlerParams,
-  NextFunction
-} from 'express-serve-static-core';
+import { ErrorRequestHandler } from 'express-serve-static-core';
 import { MongoError } from 'mongodb';
 
 export const handleAsyncErrors = (fn: any) => {

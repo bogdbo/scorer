@@ -5,7 +5,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import { Service } from '../service';
 import { Progress } from './Progress';
 import styled from 'styled-components';
-import { StatCollection } from '../games/darts/models';
+import { StatCollection } from '../../../src/StatsController';
 
 interface Props {}
 interface State {
@@ -51,10 +51,10 @@ export class StatsLandingPageInternal extends React.Component<
     this.refreshStats();
   }
 
-  refreshStats = async () => {
+  refreshStats = async (ignoreCache: boolean = false) => {
     try {
       this.setState({ stats: undefined });
-      const result = await Service.getAllStats();
+      const result = await Service.getAllStats(ignoreCache);
       this.setState({ stats: result.data });
     } catch (ex) {
       Ons.notification.toast('Cannot retrieve stats', { timeout: 3000 });
@@ -73,7 +73,7 @@ export class StatsLandingPageInternal extends React.Component<
           <span>Stats</span>
         </div>
         <div className="right">
-          <ToolbarButton onClick={this.refreshStats}>
+          <ToolbarButton onClick={() => this.refreshStats(true)}>
             <Icon icon="refresh" />
           </ToolbarButton>
         </div>

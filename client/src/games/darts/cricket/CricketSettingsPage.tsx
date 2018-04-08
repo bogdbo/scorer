@@ -1,10 +1,10 @@
-import * as React from 'react';
-import { Page, Toolbar, BackButton, Fab, Icon } from 'react-onsenui';
 import * as _ from 'lodash';
-import { X01GameSettings } from '../models';
-import { User, Service } from '../../../service';
-import { SelectPlayers } from '../../../common/SelectPlayers';
+import * as React from 'react';
+import { BackButton, Fab, Icon, Page, Toolbar } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
+import { SelectPlayers } from '../../../common/SelectPlayers';
+import { Service, User } from '../../../service';
+import { X01GameSettings } from '../models';
 
 interface Props {}
 
@@ -58,7 +58,7 @@ class CricketSettingsPageInternal extends React.Component<
             .includes('antonio')
             ? 'Crocket'
             : 'Cricket'}{' '}
-          game settings
+          settings
         </div>
       </Toolbar>
     );

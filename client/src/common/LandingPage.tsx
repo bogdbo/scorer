@@ -1,18 +1,19 @@
+import * as Ons from 'onsenui';
+import * as moment from 'moment';
 import * as React from 'react';
 import {
+  BottomToolbar,
   Button,
+  Icon,
   Page,
   ProgressCircular,
-  Toolbar,
-  Icon,
-  BottomToolbar
+  Toolbar
 } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import styled from 'styled-components';
-
+import { About, MedalsType } from '../games/darts/models';
 import { Service } from '../service';
-import { About } from '../games/darts/models';
-import * as moment from 'moment';
+import { Medal } from './Medal';
 
 const Container = styled.div`
   display: flex;
@@ -30,14 +31,22 @@ const GameButton = styled(Button)`
 
 const IdentityContainer = styled.div`
   display: flex;
+  flex-flow: row;
   align-content: center;
   justify-content: center;
+  margin: 20px;
   > select {
     font-weight: bold;
     height: 30px;
     display: flex;
     flex: 1;
-    margin: 20px;
+    > option {
+      direction: ltr;
+    }
+  }
+  > div {
+    display: flex;
+    align-items: center;
   }
 `;
 
@@ -59,6 +68,7 @@ interface State {
   users?: any;
   identitySelected?: boolean;
   about?: About;
+  medals?: MedalsType;
 }
 
 class LandingPageInternal extends React.Component<
@@ -88,11 +98,23 @@ class LandingPageInternal extends React.Component<
       identitySelected: Service.getCurrentIdentity() != null
     });
 
+    this.refreshStats();
+
     // Get version info async to not lock landing page
     Service.getAboutInfo()
       .then(result => this.setState({ about: result.data }))
       .catch(() => null);
   }
+
+  refreshStats = async (ignoreCache: boolean = false) => {
+    try {
+      this.setState({ medals: undefined });
+      const result = await Service.getAllMedals(ignoreCache);
+      this.setState({ medals: result.data });
+    } catch (ex) {
+      Ons.notification.toast('Cannot retrieve stats', { timeout: 3000 });
+    }
+  };
 
   handleIdentityChange = (e: any) => {
     if (e.target.value === 'none') {
@@ -108,6 +130,7 @@ class LandingPageInternal extends React.Component<
     if (this.state.users) {
       return (
         <select
+          dir="rtl"
           className="select-input"
           defaultValue={currentIdentity || 'none'}
           onChange={this.handleIdentityChange}
@@ -131,10 +154,33 @@ class LandingPageInternal extends React.Component<
     const relativeFrom = moment(this.state.about.from).fromNow();
     return (
       <StyledBottomToolbar>
-        <div className="left">{relativeFrom}</div>
+        <div className="left">Released {relativeFrom}</div>
         <div className="right">{this.state.about.version}</div>
       </StyledBottomToolbar>
     );
+  };
+
+  renderMedals = () => {
+    if (this.state.medals && this.state.identitySelected) {
+      return (
+        <div>
+          {Object.keys(
+            this.state.medals[Service.getCurrentIdentity() as string] || {}
+          ).map((e, i) => (
+            <Medal
+              key={'medal' + i}
+              type={i}
+              count={
+                this.state.medals &&
+                this.state.medals[Service.getCurrentIdentity() as string][e]
+              }
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   render() {
@@ -143,7 +189,10 @@ class LandingPageInternal extends React.Component<
         renderToolbar={this.renderToolbar}
         renderBottomToolbar={this.renderBottomToolbar}
       >
-        <IdentityContainer>{this.renderCurrentIdentity()}</IdentityContainer>
+        <IdentityContainer>
+          {this.renderMedals()}
+          {this.renderCurrentIdentity()}
+        </IdentityContainer>
         <Container>
           <GameButton
             disabled={!this.state.identitySelected}

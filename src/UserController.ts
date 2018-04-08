@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { handleAsyncErrors } from './ErrorHanlers';
+import { handleAsyncErrors } from './handlers/ErrorHandlers';
 
 const connectionString = process.env.DB_CONNECTION_STRING as string;
 

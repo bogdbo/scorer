@@ -2,7 +2,7 @@
   "name": "scorer-api",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.18.2",
@@ -21,8 +21,9 @@
   "scripts": {
     "compile": "./node_modules/.bin/tsc && npm start",
     "dev": "nodemon -e ts --ignore client/ --exec \"npm run compile\"",
-    "start": "./node_modules/.bin/tsc && node build/index.js",
-    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
+    "start": "./node_modules/.bin/tsc && node build/main.js",
+    "heroku-postbuild":
+      "cd client && npm install --only=dev && npm install && npm run build"
   },
   "repository": {
     "type": "git",

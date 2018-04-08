@@ -1,7 +1,10 @@
+import * as Ons from 'onsenui';
 import * as React from 'react';
 import { List, ListItem, Page } from 'react-onsenui';
 import { Service, User } from '../service';
 import { Progress } from './Progress';
+import { MedalsType } from '../games/darts/models';
+import { Medal } from './Medal';
 
 interface Props {
   onPlayersChanged: (selectedUsers: User[]) => void;
@@ -10,6 +13,7 @@ interface Props {
 interface State {
   users?: User[];
   selectedUsers: User[];
+  medals?: MedalsType;
 }
 export class SelectPlayers extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -22,12 +26,13 @@ export class SelectPlayers extends React.Component<Props, State> {
     }
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     const result = await Service.getUsers();
     const users = result.data.filter(
       (u: User) => u.username !== Service.getCurrentIdentity()
     );
     this.setState({ users });
+    this.refreshStats();
   }
 
   getUserClickHandler = (user: User) => {
@@ -70,8 +75,32 @@ export class SelectPlayers extends React.Component<Props, State> {
         <label htmlFor={`checkbox-${user.username}`} className="center">
           {user.username}
         </label>
+        {this.state.medals && (
+          <label htmlFor={`checkbox-${user.username}`} className="right">
+            {this.state.medals[user.username] &&
+              Object.keys(this.state.medals[user.username]).map((k, i) => (
+                <Medal
+                  key={user.username + k + 'medal'}
+                  type={parseInt(k, 0)}
+                  count={
+                    this.state.medals && this.state.medals[user.username][k]
+                  }
+                />
+              ))}
+          </label>
+        )}
       </ListItem>
     );
+  };
+
+  refreshStats = async (ignoreCache: boolean = false) => {
+    try {
+      this.setState({ medals: undefined });
+      const result = await Service.getAllMedals(ignoreCache);
+      this.setState({ medals: result.data });
+    } catch (ex) {
+      Ons.notification.toast('Cannot retrieve stats', { timeout: 3000 });
+    }
   };
 
   renderCurrentlySelectedUsers() {
