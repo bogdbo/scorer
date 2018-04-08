@@ -51,6 +51,8 @@ class CricketSettingsPageInternal extends React.Component<
           <BackButton onClick={() => this.props.history.goBack()} />
         </div>
         <div className="center">
+          <Icon icon="table" />
+          &nbsp;
           {(Service.getCurrentIdentity() || '')
             .toLowerCase()
             .includes('antonio')

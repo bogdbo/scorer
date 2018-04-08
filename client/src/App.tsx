@@ -1,7 +1,7 @@
 import 'onsenui/css/onsenui-core.min.css';
 import 'onsenui/css/onsenui-fonts.css';
 import 'onsenui/css/onsenui.min.css';
-import 'src/common/custom-theme.css';
+import 'src/common/darts-theme.css';
 
 import * as Ons from 'onsenui';
 import * as React from 'react';

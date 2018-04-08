@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Page, ProgressCircular, Toolbar } from 'react-onsenui';
+import { Button, Page, ProgressCircular, Toolbar, Icon } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import styled from 'styled-components';
 
@@ -24,6 +24,7 @@ const IdentityContainer = styled.div`
   align-content: center;
   justify-content: center;
   > select {
+    font-weight: bold;
     height: 30px;
     display: flex;
     flex: 1;
@@ -104,12 +105,15 @@ class LandingPageInternal extends React.Component<
             disabled={!this.state.identitySelected}
             onClick={() => this.props.history.push('/x01/settings')}
           >
-            x01
+            <Icon icon="bullseye" />
+            &nbsp; x01
           </GameButton>
           <GameButton
             disabled={!this.state.identitySelected}
             onClick={() => this.props.history.push('/cricket/settings')}
           >
+            <Icon icon="table" />
+            &nbsp;
             {(Service.getCurrentIdentity() || '')
               .toLowerCase()
               .includes('antonio')
@@ -117,7 +121,8 @@ class LandingPageInternal extends React.Component<
               : 'Cricket'}
           </GameButton>
           <GameButton onClick={() => this.props.history.push('/stats')}>
-            Stats
+            <Icon icon="bar-chart" />
+            &nbsp; Stats
           </GameButton>
         </Container>
       </Page>

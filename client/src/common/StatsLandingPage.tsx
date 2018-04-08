@@ -1,6 +1,6 @@
 import * as Ons from 'onsenui';
 import * as React from 'react';
-import { Page, Toolbar, BackButton } from 'react-onsenui';
+import { Page, Toolbar, BackButton, ToolbarButton, Icon } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Service } from '../service';
 import { Progress } from './Progress';
@@ -13,9 +13,23 @@ interface State {
 }
 
 const StatsList = styled.ol`
+  font-family: monospace;
+  list-style: decimal inside none;
+  padding: 0;
   > li {
     &:nth-child(even) {
-      background-color: #ececec;
+      background-color: #ecececee;
+    }
+    &:nth-child(1) {
+      line-height: 2;
+      background-color: #f6d600aa;
+      font-weight: bold;
+    }
+    &:nth-child(2) {
+      background-color: #cdcdcd;
+    }
+    &:nth-child(3) {
+      background-color: #cd611daa;
     }
 
     > span:last-child {
@@ -34,13 +48,18 @@ export class StatsLandingPageInternal extends React.Component<
   }
 
   async componentDidMount() {
+    this.refreshStats();
+  }
+
+  refreshStats = async () => {
     try {
-      var result = await Service.getAllStats();
+      this.setState({ stats: undefined });
+      const result = await Service.getAllStats();
       this.setState({ stats: result.data });
     } catch (ex) {
       Ons.notification.toast('Cannot retrieve stats', { timeout: 3000 });
     }
-  }
+  };
 
   renderToolbar = () => {
     return (
@@ -48,7 +67,16 @@ export class StatsLandingPageInternal extends React.Component<
         <div className="left">
           <BackButton onClick={() => this.props.history.goBack()} />
         </div>
-        <div className="center">Stats</div>
+        <div className="center">
+          <Icon icon="bar-chart" />
+          &nbsp;
+          <span>Stats</span>
+        </div>
+        <div className="right">
+          <ToolbarButton onClick={this.refreshStats}>
+            <Icon icon="refresh" />
+          </ToolbarButton>
+        </div>
       </Toolbar>
     );
   };

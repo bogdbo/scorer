@@ -92,7 +92,10 @@ export class X01SettingsPageInternal extends React.Component<
         <div className="left">
           <BackButton onClick={() => this.props.history.goBack()} />
         </div>
-        <div className="center">X01 game settings</div>
+        <div className="center">
+          <Icon icon="bullseye" />
+          &nbsp;X01 game settings
+        </div>
       </Toolbar>
     );
   };

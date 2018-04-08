@@ -36,10 +36,10 @@ export class StatsController {
       res.json([
         await StatsController.getX01Wins(X01Collection),
         await StatsController.getX01Averages(X01Collection),
-        await StatsController.getCricketTurnsPerWin(CricketCollection),
+        await StatsController.getX01Loses(X01Collection),
         await StatsController.getCricketWins(CricketCollection),
-        await StatsController.getCricketLoses(CricketCollection),
-        await StatsController.getX01Loses(X01Collection)
+        await StatsController.getCricketTurnsPerWin(CricketCollection),
+        await StatsController.getCricketLoses(CricketCollection)
       ]);
 
       client.close();
@@ -50,7 +50,7 @@ export class StatsController {
     collection: Collection<Stat>
   ): Promise<StatCollection> => {
     return {
-      title: 'X01 Average Hit',
+      title: 'X01 average throw',
       values: await collection
         .aggregate<Stat>([
           { $match: afterDateStep },
