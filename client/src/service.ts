@@ -6,7 +6,8 @@ import {
   X01GameSettings,
   X01Game,
   CricketGame,
-  StatCollection
+  StatCollection,
+  About
 } from './games/darts/models';
 
 export interface User {
@@ -114,5 +115,9 @@ export class Service {
 
   static getAllStats(): AxiosPromise<StatCollection[]> {
     return axios.get<StatCollection[]>(`${this.API}/stats`);
+  }
+
+  static getAboutInfo(): AxiosPromise<About> {
+    return axios.get<About>(`${this.API}/about`);
   }
 }

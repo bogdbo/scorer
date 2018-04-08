@@ -70,3 +70,8 @@ export type Stat = {
   _id: string;
   value: number;
 };
+
+export type About = {
+  version: string;
+  from: string;
+};

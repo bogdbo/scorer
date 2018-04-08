@@ -1,9 +1,18 @@
 import * as React from 'react';
-import { Button, Page, ProgressCircular, Toolbar, Icon } from 'react-onsenui';
+import {
+  Button,
+  Page,
+  ProgressCircular,
+  Toolbar,
+  Icon,
+  BottomToolbar
+} from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
 import styled from 'styled-components';
 
 import { Service } from '../service';
+import { About } from '../games/darts/models';
+import * as moment from 'moment';
 
 const Container = styled.div`
   display: flex;
@@ -32,11 +41,24 @@ const IdentityContainer = styled.div`
   }
 `;
 
+const StyledBottomToolbar = styled(BottomToolbar)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-family: monospace;
+  > div:last-child {
+    font-weight: bold;
+  }
+`;
+
 interface Props {}
 
 interface State {
   users?: any;
   identitySelected?: boolean;
+  about?: About;
 }
 
 class LandingPageInternal extends React.Component<
@@ -60,11 +82,16 @@ class LandingPageInternal extends React.Component<
   };
 
   async componentDidMount() {
-    const result = await Service.getUsers();
+    const usersResult = await Service.getUsers();
     this.setState({
-      users: result.data,
+      users: usersResult.data,
       identitySelected: Service.getCurrentIdentity() != null
     });
+
+    // Get version info async to not lock landing page
+    Service.getAboutInfo()
+      .then(result => this.setState({ about: result.data }))
+      .catch(() => null);
   }
 
   handleIdentityChange = (e: any) => {
@@ -96,9 +123,26 @@ class LandingPageInternal extends React.Component<
     }
   };
 
+  renderBottomToolbar = () => {
+    if (this.state.about == null) {
+      return null;
+    }
+
+    const relativeFrom = moment(this.state.about.from).fromNow();
+    return (
+      <StyledBottomToolbar>
+        <div className="left">{relativeFrom}</div>
+        <div className="right">{this.state.about.version}</div>
+      </StyledBottomToolbar>
+    );
+  };
+
   render() {
     return (
-      <Page renderToolbar={this.renderToolbar}>
+      <Page
+        renderToolbar={this.renderToolbar}
+        renderBottomToolbar={this.renderBottomToolbar}
+      >
         <IdentityContainer>{this.renderCurrentIdentity()}</IdentityContainer>
         <Container>
           <GameButton

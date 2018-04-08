@@ -6,6 +6,7 @@ import { NotificationController } from './src/NotificationsController';
 import { json } from 'body-parser';
 import { handleDatabaseErrors } from './src/ErrorHanlers';
 import { StatsController } from './src/StatsController';
+import { AboutController } from './src/AboutController';
 
 var app = express();
 app.use(express.static(path.join(__dirname, '../client/build')));
@@ -16,6 +17,7 @@ app.post('/api/v1/darts/notify', NotificationController.notify);
 app.post('/api/v1/darts/X01', DartsController.uploadX01);
 app.post('/api/v1/darts/cricket', DartsController.uploadCricket);
 app.get('/api/v1/stats', StatsController.allStats);
+app.get('/api/v1/about', AboutController.about);
 
 app.use(handleDatabaseErrors);
 
