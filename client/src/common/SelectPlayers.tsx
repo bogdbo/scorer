@@ -78,12 +78,12 @@ export class SelectPlayers extends React.Component<Props, State> {
         {this.state.medals && (
           <label htmlFor={`checkbox-${user.username}`} className="right">
             {this.state.medals[user.username] &&
-              Object.keys(this.state.medals[user.username]).map((k, i) => (
+              Object.keys(this.state.medals[user.username]).map((e, i) => (
                 <Medal
-                  key={user.username + k + 'medal'}
-                  type={parseInt(k, 0)}
+                  key={user.username + e + 'medal'}
+                  type={parseInt(e, 0)}
                   count={
-                    this.state.medals && this.state.medals[user.username][k]
+                    this.state.medals && this.state.medals[user.username][e]
                   }
                 />
               ))}

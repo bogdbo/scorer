@@ -169,7 +169,7 @@ class LandingPageInternal extends React.Component<
           ).map((e, i) => (
             <Medal
               key={'medal' + i}
-              type={i}
+              type={parseInt(e, 0)}
               count={
                 this.state.medals &&
                 this.state.medals[Service.getCurrentIdentity() as string][e]

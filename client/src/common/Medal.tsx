@@ -8,6 +8,7 @@ type MedalContainerProps = {
 
 export const MedalContainer = styled.span`
   font-weight: bold;
+  font-size: 0.8rem;
   color: ${(p: MedalContainerProps) =>
     p.type === 0 ? '#f6d600' : p.type === 1 ? '#cdcdcd' : '#cd611daa'};
   padding-left: 5px;

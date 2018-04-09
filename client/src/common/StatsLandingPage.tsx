@@ -74,7 +74,7 @@ export class StatsLandingPageInternal extends React.Component<
         </div>
         <div className="right">
           <ToolbarButton onClick={() => this.refreshStats(true)}>
-            <Icon icon="refresh" />
+            <Icon icon="refresh" spin={this.state.stats == null} />
           </ToolbarButton>
         </div>
       </Toolbar>
