@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { withCache } from './handlers/CacheHandler';
 
-const cacheDuration = 86400;
+const cacheDuration = 7200;
 
 export class AboutController {
   static about = withCache(
