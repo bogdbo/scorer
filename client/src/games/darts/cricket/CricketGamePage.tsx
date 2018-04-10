@@ -319,11 +319,13 @@ export class CricketGamePageInternal extends React.Component<
 
     const previousThrow = turn.throws.pop() as CricketThrowDetails;
     game.scores[turn.username].points -= previousThrow.points; // undo extra points
-    game.scores[turn.username][
-      previousThrow.value
-    ] -= previousThrow.throwDistribution.filter(
-      d => d === CricketThrowResult.Hit
-    ).length; // undo hits, if there were any
+    if (previousThrow.value !== 0) {
+      game.scores[turn.username][
+        previousThrow.value
+      ] -= previousThrow.throwDistribution.filter(
+        d => d === CricketThrowResult.Hit
+      ).length; // undo hits, if there were any
+    }
 
     this.setState({ game, turn: turn });
   };
