@@ -26,6 +26,8 @@ const PlayerColumn = styled.div`
   background: #f8fafa;
   > div:not(:first-child) {
     opacity: ${(p: PlayerColumnProps) => (p.isActive ? 1 : 0.8)};
+    box-shadow: ${(p: PlayerColumnProps) =>
+      p.isActive ? 'inset 0px 0px 100px 3px rgba(214,103,172,0.51)' : 'none'};
   }
 `;
 

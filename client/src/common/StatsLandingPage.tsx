@@ -1,16 +1,19 @@
 import * as Ons from 'onsenui';
 import * as React from 'react';
-import { Page, Toolbar, BackButton, ToolbarButton, Icon } from 'react-onsenui';
+import { BackButton, Icon, Page, Toolbar, ToolbarButton } from 'react-onsenui';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Service } from '../service';
-import { Progress } from './Progress';
 import styled from 'styled-components';
 import { StatCollection } from '../../../src/StatsController';
+import { Service } from '../service';
+import { Progress } from './Progress';
 
-interface Props {}
-interface State {
-  stats?: StatCollection[];
-}
+type StatsCardProps = {
+  bgColor?: string;
+};
+
+const StatsCard = styled.div`
+  background-color: ${(p: StatsCardProps) => p.bgColor || 'white'};
+`;
 
 const StatsList = styled.ol`
   font-family: monospace;
@@ -37,6 +40,11 @@ const StatsList = styled.ol`
     }
   }
 `;
+
+interface Props {}
+interface State {
+  stats?: StatCollection[];
+}
 
 export class StatsLandingPageInternal extends React.Component<
   Props & RouteComponentProps<{}>,
@@ -83,10 +91,14 @@ export class StatsLandingPageInternal extends React.Component<
 
   renderStatsCard = (title: string, content: JSX.Element) => {
     return (
-      <div className="card" key={title}>
+      <StatsCard
+        className="card"
+        key={title}
+        bgColor={title.includes('loses') ? '#00000017' : 'white'}
+      >
         <h2 className="card__title">{title}</h2>
         <div className="card__content">{content}</div>
-      </div>
+      </StatsCard>
     );
   };
 
