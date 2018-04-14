@@ -14,7 +14,8 @@ import {
   CricketTurnDetails
 } from '../models';
 import { CricketPlayers } from './CricketPlayers';
-import { CricketPoints } from './CricketPoints';
+// import { CricketPoints } from './CricketPoints';
+import { CricketPointsWithModifiers } from './CricketPointsWithModifiers';
 
 const Header = styled.div`
   grid-row: 1 / 2;
@@ -403,7 +404,7 @@ export class CricketGamePageInternal extends React.Component<
           </PlayersContainer>
           <PointsContainer>
             {!this.state.game.endedAt && (
-              <CricketPoints
+              <CricketPointsWithModifiers
                 onPoints={this.handleThrow}
                 onUndo={this.handleUndo}
                 onNextPlayer={this.handleNextPlayer}

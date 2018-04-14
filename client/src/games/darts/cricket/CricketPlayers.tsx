@@ -2,12 +2,14 @@ import * as React from 'react';
 import { CricketGame, CricketTurnDetails } from '../models';
 import styled from 'styled-components';
 import * as _ from 'lodash';
-import { Icon } from 'react-onsenui';
 
 const PlayerScores = styled.div`
   display: grid;
   grid-gap: 2px;
-  grid-auto-columns: minmax(30%, 50%);
+  grid-auto-columns: minmax(
+    49%,
+    50%
+  ); /* workaround for grid-gap not following border-box behavior */
   grid-template-rows: 100%;
   flex: 1 0 100%;
 `;
@@ -18,6 +20,7 @@ type PlayerColumnProps = {
 };
 
 const PlayerColumn = styled.div`
+  color: purple;
   grid-column: ${(p: PlayerColumnProps) => p.column};
   display: grid;
   grid-template-rows: repeat(8, 1fr);
@@ -69,9 +72,8 @@ const Score = styled.div`
     p.canScorePoints
       ? '#88C100'
       : p.isClosed ? '#EB6841' : p.index % 2 === 0 ? '#B9C6C9' : '#C6D2D4'};
-  ons-icon {
-    font-size: 5vmax;
-    color: purple;
+  font-size: 5vmax;
+  font-weight: bold;
   }
 `;
 
@@ -101,15 +103,7 @@ export const CricketPlayers: React.SFC<Props> = (props: Props) => {
               isClosed={!open}
               canScorePoints={canScorePoints}
             >
-              {props.game.scores[username][n] > 0 && (
-                <Icon
-                  icon={
-                    score === 1
-                      ? 'star-o'
-                      : score === 2 ? 'star-half-o' : 'star'
-                  }
-                />
-              )}
+              {score > 0 && score}
             </Score>
           );
         });
@@ -126,8 +120,7 @@ export const CricketPlayers: React.SFC<Props> = (props: Props) => {
             ref &&
             isActive &&
             ref.scrollIntoView({
-              block: 'start',
-              inline: 'start',
+              inline: 'end',
               behavior: 'smooth'
             })
           }
