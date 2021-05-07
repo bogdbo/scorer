@@ -7,7 +7,7 @@
     "axios": "^0.18.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.21",
     "moment": "^2.22.0",
     "mongodb": "^3.0.4",
     "typescript": "^2.7.2",
